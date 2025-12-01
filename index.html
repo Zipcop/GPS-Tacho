@@ -45,7 +45,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* FIX: 100dvh passt sich dynamisch an Mobile-Browser-Leisten an */
             min-height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             touch-action: manipulation;
             user-select: none;
@@ -62,9 +64,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            height: 100vh;
+            /* FIX: Container füllt exakt den sichtbaren Bereich */
+            height: 100%;
             justify-content: space-between;
-            padding-bottom: 20px;
+            /* FIX: Mehr Abstand unten, berücksichtigt die "Home Bar" moderner Handys */
+            padding-bottom: max(30px, env(safe-area-inset-bottom) + 20px);
             position: relative;
         }
 
@@ -76,6 +80,8 @@
             aspect-ratio: 1/1;
             margin-top: 10px;
             filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.1));
+            /* Damit der Tacho nicht zu riesig wird und Platz klaut */
+            flex-shrink: 1; 
         }
 
         canvas { width: 100%; height: 100%; }
@@ -123,6 +129,8 @@
             gap: 15px;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             z-index: 20;
+            /* Flexibles Layout damit es nicht crushed */
+            flex-shrink: 0;
         }
 
         /* Mode Buttons */
