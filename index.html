@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GPS Tacho</title>
     
-    <!-- PWA Settings & Manifest für Mobile Homescreen -->
     <meta name="theme-color" content="#050505">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="GPS Tacho">
 
-    <!-- Icon als URL (Funktioniert stabiler für Shortcuts) -->
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/192/speedometer.png">
-    
-    <!-- Apple Touch Icon (Wichtig für iOS Homescreen) -->
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/speedometer.png">
-
-    <!-- Web App Manifest (Wichtig für Android Homescreen) -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"GPS Tacho","short_name":"Tacho","start_url":".","display":"standalone","background_color":"#050505","theme_color":"#00f3ff","icons":[{"src":"https://img.icons8.com/fluency/192/speedometer.png","sizes":"192x192","type":"image/png"}]}'>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,60 +30,53 @@
             --text-muted: #8888aa;
         }
 
-        body {
-            font-family: 'Orbitron', sans-serif;
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
             background-color: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 30%, #1a1a25 0%, #000000 70%);
+            font-family: 'Orbitron', sans-serif;
             color: var(--text-main);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* FIX: 100dvh passt sich dynamisch an Mobile-Browser-Leisten an */
-            min-height: 100vh;
-            height: 100dvh;
-            overflow: hidden;
-            touch-action: manipulation;
-            user-select: none;
-            /* Wichtig für iOS Fullscreen */
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            position: fixed; 
         }
 
         .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 10px;
-            box-sizing: border-box;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* FIX: Container füllt exakt den sichtbaren Bereich */
-            height: 100%;
-            justify-content: space-between;
-            /* FIX: Mehr Abstand unten, berücksichtigt die "Home Bar" moderner Handys */
-            padding-bottom: max(30px, env(safe-area-inset-bottom) + 20px);
-            position: relative;
+            padding: 10px;
+            padding-top: env(safe-area-inset-top);
+            /* FIX: Deutlich mehr Abstand unten (+60px), damit Buttons höher sitzen */
+            padding-bottom: calc(env(safe-area-inset-bottom) + 60px);
+            box-sizing: border-box;
         }
 
-        /* TACHO BEREICH */
-        .gauge-container {
-            position: relative;
+        .gauge-wrapper-flex {
+            flex: 1 1 auto; 
             width: 100%;
-            max-width: 360px;
-            aspect-ratio: 1/1;
-            margin-top: 10px;
-            filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.1));
-            /* Damit der Tacho nicht zu riesig wird und Platz klaut */
-            flex-shrink: 1; 
+            max-width: 500px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; 
+            margin-bottom: 10px;
         }
 
-        canvas { width: 100%; height: 100%; }
+        canvas { 
+            max-width: 100%; 
+            max-height: 100%;
+            object-fit: contain;
+        }
 
-        /* Digitaler Wert */
         .digital-center {
             position: absolute;
-            top: 70%;
+            top: 65%; 
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -115,25 +102,24 @@
             opacity: 0.8;
         }
 
-        /* STEUERUNG */
         .controls-panel {
+            flex: 0 0 auto; 
             width: 100%;
+            max-width: 500px;
             background: var(--bg-panel);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 24px;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             z-index: 20;
-            /* Flexibles Layout damit es nicht crushed */
-            flex-shrink: 0;
+            box-sizing: border-box;
         }
 
-        /* Mode Buttons */
         .mode-row {
             display: flex;
             background: rgba(0,0,0,0.3);
@@ -163,36 +149,35 @@
             font-weight: 700;
         }
 
-        /* Timer & Status */
         .info-box {
             text-align: center;
-            min-height: 80px;
+            min-height: 70px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
         .timer-val {
-            font-size: 3rem;
+            font-size: 2.8rem;
             color: var(--text-main);
             text-shadow: 0 0 10px rgba(255,255,255,0.3);
             font-variant-numeric: tabular-nums;
+            line-height: 1;
         }
 
         .status-msg {
             font-size: 0.9rem;
             color: var(--text-muted);
-            margin-top: 5px;
+            margin-top: 4px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* Hold Bar */
         .hold-track {
             width: 100%;
             height: 4px;
             background: #222;
-            margin-top: 10px;
+            margin-top: 8px;
             border-radius: 2px;
             overflow: hidden;
             display: none;
@@ -205,23 +190,21 @@
             transition: width 0.1s linear;
         }
 
-        /* Action Buttons Area */
         .action-area {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        /* Main Button */
         .btn-main {
             flex: 3;
-            padding: 18px;
+            padding: 16px;
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
@@ -233,7 +216,7 @@
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
             color: var(--text-muted);
-            border-radius: 14px;
+            border-radius: 12px;
             font-family: 'Orbitron', sans-serif;
             font-weight: 600;
             cursor: pointer;
@@ -255,7 +238,6 @@
             text-shadow: 0 0 8px var(--accent-red);
         }
 
-        /* Overlay */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
@@ -275,7 +257,6 @@
         }
         @keyframes zoomPulse { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
 
-        /* Modals (Base) */
         .modal-base {
             position: absolute; z-index: 300;
             background: #15151a; border: 1px solid #333;
@@ -286,19 +267,16 @@
         }
         .modal-base.open { opacity: 1; pointer-events: auto; }
 
-        /* WICHTIG: Höherer Z-Index für Overlays über der History */
         #renameModal, #confirmModal {
             z-index: 400 !important;
         }
 
-        /* Custom Modal (Centered) */
         .custom-modal {
             top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 85%; padding: 25px; border-radius: 20px; gap: 20px;
         }
         .custom-modal.open { transform: translate(-50%, -50%) scale(1); }
 
-        /* Debug Modal */
         .debug-modal {
             top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
             width: 85%; padding: 25px; border-radius: 20px; gap: 15px;
@@ -307,7 +285,6 @@
         }
         .debug-modal.open { transform: translate(-50%, -50%) scale(1); }
 
-        /* History Modal */
         .history-modal {
             bottom: -100%; left: 0; width: 100%; height: 80%;
             border-top-left-radius: 30px; border-top-right-radius: 30px;
@@ -326,7 +303,6 @@
             font-family: inherit; text-align: center;
         }
 
-        /* GPS Status */
         .gps-stat {
             position: absolute; top: 10px; right: 10px;
             font-size: 0.7rem; color: #555;
@@ -341,7 +317,6 @@
         .dot.sim { background: var(--accent-purple); box-shadow: 0 0 6px var(--accent-purple); }
         @keyframes blink { 50% { opacity: 0.3; } }
         
-        /* History List Styling */
         .hist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .hist-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
@@ -370,7 +345,6 @@
         .h-btn:hover { background: #444; color: #fff; }
         .h-btn.del:hover { background: rgba(255, 42, 42, 0.2); color: var(--accent-red); }
 
-        /* Slider */
         input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; margin: 20px 0; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; margin-top: -10px; box-shadow: 0 0 10px var(--accent-cyan); }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
@@ -448,7 +422,7 @@
     </div>
 
     <div class="container">
-        <div class="gauge-container">
+        <div class="gauge-wrapper-flex">
             <canvas id="gaugeCanvas"></canvas>
             <div class="digital-center">
                 <div class="speed-big" id="digiSpeed">0</div>
@@ -517,7 +491,8 @@
             debugSlider: document.getElementById('debugSlider'),
             renameModal: document.getElementById('renameModal'),
             renameInput: document.getElementById('renameInput'),
-            confirmModal: document.getElementById('confirmModal')
+            confirmModal: document.getElementById('confirmModal'),
+            gaugeWrapper: document.querySelector('.gauge-wrapper-flex')
         };
         const ctx = ui.can.getContext('2d');
         let dim = { w:0, h:0, cx:0, cy:0, r:0 };
@@ -529,13 +504,14 @@
 
         function resize() {
             const dpr = window.devicePixelRatio || 1;
-            const rect = ui.can.parentElement.getBoundingClientRect();
-            if (rect.width === 0) return;
+            const rect = ui.gaugeWrapper.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
             ui.can.width = rect.width * dpr; ui.can.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
             dim.w = rect.width; dim.h = rect.height;
             dim.cx = dim.w/2; dim.cy = dim.h/2; 
-            dim.r = Math.max(0, (dim.w/2) - 15); 
+            const minDim = Math.min(dim.w, dim.h);
+            dim.r = Math.max(0, (minDim / 2) - 15);
         }
 
         /* --- DEBUG --- */
