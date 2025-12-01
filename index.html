@@ -374,6 +374,7 @@
         const MAX_SPEED = 260;
         const HOLD_TIME = 3000; // 3 sekunden
         const TOLERANCE = 2.0; 
+        const STATIC_TOLERANCE = 2.0; // km/h, Schwelle für "Stillstand"
         const STORAGE_KEY = 'pro_tacho_logs';
 
         /* --- STATE --- */
@@ -384,7 +385,7 @@
             modeStart: 0,
             modeEnd: 100,
             
-            // Workflow: IDLE -> COUNTDOWN -> CHECK_ROLLING -> HOLDING -> ARMED -> RUNNING -> FINISHED
+            // Workflow: IDLE -> CHECK_STATIC -> COUNTDOWN -> CHECK_ROLLING -> HOLDING -> ARMED -> RUNNING -> FINISHED
             phase: 'IDLE',
             
             startTime: 0,
@@ -426,7 +427,6 @@
             const dpr = window.devicePixelRatio || 1;
             const rect = ui.can.parentElement.getBoundingClientRect();
             
-            // Sicherheitscheck: Verhindere 0-Breite
             if (rect.width === 0 || rect.height === 0) {
                  dim.w = 0; dim.h = 0; dim.r = 0;
                  return;
@@ -438,7 +438,6 @@
             dim.w = rect.width; dim.h = rect.height;
             dim.cx = dim.w/2; dim.cy = dim.h/2; 
             
-            // Radius darf nicht negativ sein
             dim.r = Math.max(0, (dim.w/2) - 15); 
         }
 
@@ -456,10 +455,8 @@
                 mode: `${state.modeStart}-${state.modeEnd}`,
                 time: timeVal
             };
-            logs.unshift(newLog); // Neuester zuerst
-            // Max 50 Einträge
+            logs.unshift(newLog); 
             if(logs.length > 50) logs.pop();
-            
             localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
             renderHistory();
         }
@@ -490,7 +487,6 @@
             logs.forEach(log => {
                 const el = document.createElement('div');
                 el.className = 'hist-item';
-                // Optional: Markiere den allerneuesten
                 if(Date.now() - log.id < 5000) el.classList.add('new');
                 
                 el.innerHTML = `
@@ -526,15 +522,23 @@
                 resetAll();
                 return;
             }
-            // Start
-            if(state.modeStart === 0) startStaticSequence();
+            // Start Logic
+            if(state.modeStart === 0) initStaticStart();
             else startRollingSequence();
         }
 
-        // 0-100 Sequenz
-        function startStaticSequence() {
-            state.phase = 'COUNTDOWN';
+        // 0-100 Logic
+        function initStaticStart() {
+            // Neue Phase: Erst prüfen ob wir stehen
+            state.phase = 'CHECK_STATIC';
             setBtnState('stop');
+            ui.status.textContent = "BITTE ANHALTEN...";
+            ui.status.style.color = "var(--text-muted)";
+            // CheckLogik übernimmt ab hier
+        }
+
+        function runCountdown() {
+            state.phase = 'COUNTDOWN';
             ui.ovl.classList.add('active');
             
             let c = 3;
@@ -562,12 +566,12 @@
         function updateOverlay(txt) {
             const el = ui.ovlTxt;
             el.style.animation = 'none';
-            el.offsetHeight; // trigger reflow
+            el.offsetHeight; 
             el.style.animation = 'zoomPulse 0.8s ease-out';
             el.textContent = txt;
         }
 
-        // Rolling Sequenz
+        // Rolling Logic
         function startRollingSequence() {
             state.phase = 'CHECK_ROLLING';
             setBtnState('stop');
@@ -578,10 +582,21 @@
         }
 
         function checkLogic() {
-            // Wird bei jedem GPS Tick gerufen
             if(state.phase === 'IDLE' || state.phase === 'FINISHED') return;
 
-            // Rolling: Check Speed
+            // 1. NEU: Check Static (0-100 Modus)
+            if(state.phase === 'CHECK_STATIC') {
+                if(state.speed < STATIC_TOLERANCE) {
+                    // Stehen geblieben -> Countdown starten
+                    runCountdown();
+                } else {
+                    // Bewegt sich noch
+                    ui.status.textContent = `ANHALTEN! (${Math.round(state.speed)})`;
+                    ui.status.style.color = "var(--accent-red)";
+                }
+            }
+
+            // 2. Rolling: Check Speed Window
             if(state.phase === 'CHECK_ROLLING') {
                 const min = state.modeStart - TOLERANCE;
                 const max = state.modeStart + TOLERANCE;
@@ -595,7 +610,7 @@
                 }
             }
 
-            // Rolling: Hold Timer
+            // 3. Rolling: Hold Timer
             if(state.phase === 'HOLDING') {
                 const min = state.modeStart - TOLERANCE;
                 const max = state.modeStart + TOLERANCE;
@@ -622,7 +637,7 @@
                 }
             }
 
-            // Armed: Warten auf Beschleunigung
+            // 4. Armed: Wait for Launch
             if(state.phase === 'ARMED') {
                 const trigger = state.modeStart === 0 ? 1.5 : (state.modeStart + TOLERANCE);
                 if(state.speed > trigger) {
@@ -630,7 +645,7 @@
                 }
             }
 
-            // Running: Check End Speed
+            // 5. Running
             if(state.phase === 'RUNNING') {
                 if(state.speed >= state.modeEnd) finishRun();
             }
@@ -649,7 +664,6 @@
             ui.status.textContent = "MESSUNG LÄUFT";
             ui.status.style.color = "var(--accent-cyan)";
             
-            // Timer Display Loop
             state.timerId = setInterval(() => {
                 const d = (Date.now() - state.startTime)/1000;
                 ui.timer.textContent = d.toFixed(2);
@@ -667,7 +681,6 @@
             ui.status.style.color = "#fff";
             setBtnState('start', "NEUER START");
             
-            // SPEICHERN
             saveRun(timeStr);
         }
 
@@ -697,9 +710,8 @@
 
         /* --- VISUALS (CANVAS) --- */
         function loop() {
-            // Smooth Speed
             let diff = state.speed - state.displaySpeed;
-            state.displaySpeed += diff * 0.15; // Trägheit
+            state.displaySpeed += diff * 0.15; 
             
             ui.digi.textContent = Math.round(state.displaySpeed);
             
@@ -708,16 +720,14 @@
         }
 
         function drawTacho() {
-            // Sicherheitscheck: Verhindert Absturz bei 0-Radius
             if (dim.r <= 20) return;
 
             ctx.clearRect(0,0, dim.w, dim.h);
             
-            const startAng = 0.75 * Math.PI; // 135 grad
-            const endAng = 2.25 * Math.PI;   // 405 grad
+            const startAng = 0.75 * Math.PI; 
+            const endAng = 2.25 * Math.PI;  
             const range = endAng - startAng;
             
-            // 1. Hintergrund Ring (Dunkel)
             ctx.beginPath();
             ctx.arc(dim.cx, dim.cy, dim.r, startAng, endAng);
             ctx.lineWidth = 20;
@@ -725,7 +735,6 @@
             ctx.strokeStyle = '#111';
             ctx.stroke();
 
-            // 2. Skala Striche (Ticks)
             const steps = MAX_SPEED / 20; 
             for(let i=0; i<=MAX_SPEED; i+=10) {
                 const norm = i / MAX_SPEED;
@@ -744,11 +753,9 @@
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
                 ctx.lineWidth = isMajor ? 3 : 1;
-                // Rot ab 220
                 ctx.strokeStyle = (i >= 220) ? '#ff2a2a' : '#444'; 
                 ctx.stroke();
                 
-                // Zahlen (optional, aber bei cleanem look oft weggelassen oder nur wenige)
                 if(isMajor && i%40 === 0) {
                     const rTxt = dim.r - 45;
                     const tx = dim.cx + Math.cos(ang)*rTxt;
@@ -761,16 +768,14 @@
                 }
             }
 
-            // 3. Aktiver Bogen (Glow & Gradient)
             const speedNorm = Math.min(state.displaySpeed / MAX_SPEED, 1);
             if(speedNorm > 0.01) {
                 const currentAng = startAng + (speedNorm * range);
                 
-                // Gradient erstellen
                 const grad = ctx.createLinearGradient(0, dim.h, dim.w, 0);
-                grad.addColorStop(0, '#00f3ff'); // Cyan
-                grad.addColorStop(0.6, '#bc13fe'); // Lila
-                grad.addColorStop(1, '#ff2a2a'); // Rot
+                grad.addColorStop(0, '#00f3ff'); 
+                grad.addColorStop(0.6, '#bc13fe'); 
+                grad.addColorStop(1, '#ff2a2a'); 
 
                 ctx.beginPath();
                 ctx.arc(dim.cx, dim.cy, dim.r, startAng, currentAng);
@@ -778,16 +783,12 @@
                 ctx.lineCap = 'round';
                 ctx.strokeStyle = grad;
                 
-                // Glow Effekt
                 ctx.shadowBlur = 15;
                 ctx.shadowColor = '#00f3ff';
                 ctx.stroke();
-                
-                // Reset Shadow
                 ctx.shadowBlur = 0;
             }
 
-            // 4. Nadel (Modernes Dreieck)
             drawNeedle(speedNorm, startAng, range);
         }
 
@@ -799,22 +800,19 @@
             ctx.translate(dim.cx, dim.cy);
             ctx.rotate(angle);
             
-            // Nadel Form
             ctx.beginPath();
             ctx.moveTo(0, -3);
             ctx.lineTo(rNeedle, 0);
             ctx.lineTo(0, 3);
             ctx.fillStyle = "#fff";
             
-            // Glow
             ctx.shadowBlur = 10;
             ctx.shadowColor = "#fff";
             ctx.fill();
             
             ctx.restore();
-            ctx.shadowBlur = 0; // Reset
+            ctx.shadowBlur = 0; 
             
-            // Center Cap
             ctx.beginPath();
             ctx.arc(dim.cx, dim.cy, 8, 0, Math.PI*2);
             ctx.fillStyle = "#222";
