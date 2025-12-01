@@ -47,6 +47,7 @@
             height: 100vh;
             justify-content: space-between;
             padding-bottom: 20px;
+            position: relative;
         }
 
         /* TACHO BEREICH */
@@ -103,6 +104,7 @@
             flex-direction: column;
             gap: 15px;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            z-index: 20;
         }
 
         /* Mode Buttons */
@@ -174,9 +176,15 @@
             transition: width 0.1s linear;
         }
 
+        /* Action Buttons Area */
+        .action-area {
+            display: flex;
+            gap: 10px;
+        }
+
         /* Main Button */
         .btn-main {
-            width: 100%;
+            flex: 3;
             padding: 18px;
             border: none;
             border-radius: 14px;
@@ -189,6 +197,18 @@
             transition: all 0.2s;
             position: relative;
             overflow: hidden;
+        }
+
+        .btn-logs {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            border-radius: 14px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
         }
 
         .btn-start {
@@ -230,6 +250,51 @@
             100% { transform: scale(1); } 
         }
 
+        /* Logs / History Modal */
+        .history-modal {
+            position: absolute;
+            bottom: -100%; left: 0; width: 100%; height: 80%;
+            background: #0f0f15;
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 200;
+            display: flex; flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            border-top: 1px solid #333;
+        }
+        .history-modal.open { bottom: 0; }
+        
+        .hist-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .hist-title { font-size: 1.2rem; color: var(--accent-cyan); font-weight: 700; }
+        .close-btn { background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
+        
+        .hist-list {
+            flex: 1; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        
+        .hist-item {
+            background: #1a1a20;
+            padding: 15px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 3px solid #333;
+        }
+        .hist-item.new { border-left-color: var(--accent-green); animation: slideIn 0.3s; }
+        
+        .h-time { font-size: 1.5rem; color: #fff; font-weight: 700; }
+        .h-meta { font-size: 0.75rem; color: #666; display: flex; flex-direction: column; gap: 2px; }
+        .h-del { background: none; border: none; color: #444; font-size: 1.2rem; cursor: pointer; padding: 5px; }
+        .h-del:hover { color: var(--accent-red); }
+
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         /* GPS Status */
         .gps-stat {
             position: absolute; top: 10px; right: 10px;
@@ -256,6 +321,18 @@
     <div class="gps-stat">
         <div id="gpsDot" class="dot"></div>
         <span id="gpsTxt">NO GPS</span>
+    </div>
+
+    <!-- History Modal -->
+    <div class="history-modal" id="histModal">
+        <div class="hist-header">
+            <span class="hist-title">DATA CENTER</span>
+            <button class="close-btn" onclick="toggleHistory()">×</button>
+        </div>
+        <div class="hist-list" id="histList">
+            <!-- Items kommen hier rein -->
+        </div>
+        <button onclick="clearHistory()" style="margin-top:15px; padding:12px; background:#222; border:none; color:#666; border-radius:8px; font-family:'Orbitron'; cursor:pointer;">ALLE LÖSCHEN</button>
     </div>
 
     <div class="container">
@@ -285,7 +362,10 @@
                 </div>
             </div>
 
-            <button class="btn-main btn-start" onclick="handleBtn()" id="mainBtn">START</button>
+            <div class="action-area">
+                <button class="btn-logs" onclick="toggleHistory()">LOGS</button>
+                <button class="btn-main btn-start" onclick="handleBtn()" id="mainBtn">START</button>
+            </div>
         </div>
     </div>
 
@@ -294,6 +374,7 @@
         const MAX_SPEED = 260;
         const HOLD_TIME = 3000; // 3 sekunden
         const TOLERANCE = 2.0; 
+        const STORAGE_KEY = 'pro_tacho_logs';
 
         /* --- STATE --- */
         let state = {
@@ -325,7 +406,9 @@
             holdTrack: document.getElementById('holdTrack'),
             holdFill: document.getElementById('holdFill'),
             gpsDot: document.getElementById('gpsDot'),
-            gpsTxt: document.getElementById('gpsTxt')
+            gpsTxt: document.getElementById('gpsTxt'),
+            histModal: document.getElementById('histModal'),
+            histList: document.getElementById('histList')
         };
         const ctx = ui.can.getContext('2d');
         let dim = { w:0, h:0, cx:0, cy:0, r:0 };
@@ -336,20 +419,99 @@
             window.addEventListener('resize', resize);
             loop(); // Visueller Loop
             startGPS();
+            renderHistory(); // Lade Logs beim Start
         }
 
         function resize() {
             const dpr = window.devicePixelRatio || 1;
             const rect = ui.can.parentElement.getBoundingClientRect();
+            
+            // Sicherheitscheck: Verhindere 0-Breite
+            if (rect.width === 0 || rect.height === 0) {
+                 dim.w = 0; dim.h = 0; dim.r = 0;
+                 return;
+            }
+
             ui.can.width = rect.width * dpr;
             ui.can.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
             dim.w = rect.width; dim.h = rect.height;
             dim.cx = dim.w/2; dim.cy = dim.h/2; 
-            dim.r = (dim.w/2) - 15; // Padding für Glow
+            
+            // Radius darf nicht negativ sein
+            dim.r = Math.max(0, (dim.w/2) - 15); 
         }
 
-        /* --- LOGIK (Übernommen aus Vorversion) --- */
+        /* --- HISTORY LOGIC --- */
+        function getHistory() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveRun(timeVal) {
+            const logs = getHistory();
+            const newLog = {
+                id: Date.now(),
+                date: new Date().toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}),
+                mode: `${state.modeStart}-${state.modeEnd}`,
+                time: timeVal
+            };
+            logs.unshift(newLog); // Neuester zuerst
+            // Max 50 Einträge
+            if(logs.length > 50) logs.pop();
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            renderHistory();
+        }
+
+        function deleteLog(id) {
+            let logs = getHistory();
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if(confirm("Alle Logs löschen?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            const logs = getHistory();
+            ui.histList.innerHTML = '';
+            
+            if(logs.length === 0) {
+                ui.histList.innerHTML = '<div style="text-align:center; color:#444; margin-top:20px;">KEINE DATEN</div>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const el = document.createElement('div');
+                el.className = 'hist-item';
+                // Optional: Markiere den allerneuesten
+                if(Date.now() - log.id < 5000) el.classList.add('new');
+                
+                el.innerHTML = `
+                    <div class="h-meta">
+                        <span style="color:#888">${log.date}</span>
+                        <span style="color:var(--accent-cyan); font-weight:bold">${log.mode} KM/H</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="h-time">${log.time}s</span>
+                        <button class="h-del" onclick="deleteLog(${log.id})">×</button>
+                    </div>
+                `;
+                ui.histList.appendChild(el);
+            });
+        }
+
+        function toggleHistory() {
+            ui.histModal.classList.toggle('open');
+        }
+
+        /* --- LOGIK --- */
         function setMode(s, e, el) {
             if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') return;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -498,10 +660,15 @@
             clearInterval(state.timerId);
             state.phase = 'FINISHED';
             const d = (Date.now() - state.startTime)/1000;
-            ui.timer.textContent = d.toFixed(2);
+            const timeStr = d.toFixed(2);
+            
+            ui.timer.textContent = timeStr;
             ui.status.textContent = `ZIEL ERREICHT!`;
             ui.status.style.color = "#fff";
             setBtnState('start', "NEUER START");
+            
+            // SPEICHERN
+            saveRun(timeStr);
         }
 
         function resetAll() {
@@ -541,6 +708,9 @@
         }
 
         function drawTacho() {
+            // Sicherheitscheck: Verhindert Absturz bei 0-Radius
+            if (dim.r <= 20) return;
+
             ctx.clearRect(0,0, dim.w, dim.h);
             
             const startAng = 0.75 * Math.PI; // 135 grad
