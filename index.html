@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pro Cockpit Tacho</title>
-    <!-- Importiere futuristischen Font -->
+    <title>GPS Tacho</title>
+    
+    <!-- NEU: App Icon (Favicon & Homescreen Icon) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23050505'/%3E%3Cpath d='M10,54 A26,26 0 1,1 54,54' fill='none' stroke='%2300f3ff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M32,32 L48,16' stroke='%23ff2a2a' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23333'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23050505'/%3E%3Cpath d='M10,54 A26,26 0 1,1 54,54' fill='none' stroke='%2300f3ff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M32,32 L48,16' stroke='%23ff2a2a' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23333'/%3E%3C/svg%3E">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -22,7 +26,7 @@
         }
 
         body {
-            font-family: 'Orbitron', sans-serif; /* Cockpit Font */
+            font-family: 'Orbitron', sans-serif;
             background-color: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 30%, #1a1a25 0%, #000000 70%);
             color: var(--text-main);
@@ -62,10 +66,10 @@
 
         canvas { width: 100%; height: 100%; }
 
-        /* Digitaler Wert in der Mitte */
+        /* Digitaler Wert */
         .digital-center {
             position: absolute;
-            top: 55%;
+            top: 70%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -74,7 +78,7 @@
         }
 
         .speed-big {
-            font-size: 4.5rem;
+            font-size: 3.5rem;
             font-weight: 700;
             line-height: 0.9;
             background: linear-gradient(180deg, #fff, #aaa);
@@ -91,7 +95,7 @@
             opacity: 0.8;
         }
 
-        /* STEUERUNG (Glasmorphismus) */
+        /* STEUERUNG */
         .controls-panel {
             width: 100%;
             background: var(--bg-panel);
@@ -113,6 +117,7 @@
             background: rgba(0,0,0,0.3);
             border-radius: 12px;
             padding: 4px;
+            gap: 2px;
         }
 
         .mode-btn {
@@ -121,11 +126,12 @@
             border: none;
             color: var(--text-muted);
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             padding: 12px 0;
             cursor: pointer;
             transition: all 0.3s ease;
             border-radius: 8px;
+            white-space: nowrap;
         }
 
         .mode-btn.active {
@@ -148,6 +154,7 @@
             font-size: 3rem;
             color: var(--text-main);
             text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            font-variant-numeric: tabular-nums;
         }
 
         .status-msg {
@@ -158,7 +165,7 @@
             letter-spacing: 1px;
         }
 
-        /* Hold Bar (Rolling Start) */
+        /* Hold Bar */
         .hold-track {
             width: 100%;
             height: 4px;
@@ -226,7 +233,7 @@
             text-shadow: 0 0 8px var(--accent-red);
         }
 
-        /* Countdown Overlay (0-100) */
+        /* Overlay */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9);
@@ -244,56 +251,58 @@
             text-shadow: 0 0 30px var(--accent-cyan);
             animation: zoomPulse 0.8s ease-out;
         }
-        @keyframes zoomPulse { 
-            0% { transform: scale(0.5); opacity: 0; }
-            60% { transform: scale(1.2); opacity: 1; } 
-            100% { transform: scale(1); } 
+        @keyframes zoomPulse { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
+
+        /* Modals (Base) */
+        .modal-base {
+            position: absolute; z-index: 300;
+            background: #15151a; border: 1px solid #333;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; pointer-events: none;
+            display: flex; flex-direction: column;
+        }
+        .modal-base.open { opacity: 1; pointer-events: auto; }
+
+        /* WICHTIG: Höherer Z-Index für Overlays über der History */
+        #renameModal, #confirmModal {
+            z-index: 400 !important;
         }
 
-        /* Logs / History Modal */
+        /* Custom Modal (Centered) */
+        .custom-modal {
+            top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 85%; padding: 25px; border-radius: 20px; gap: 20px;
+        }
+        .custom-modal.open { transform: translate(-50%, -50%) scale(1); }
+
+        /* Debug Modal */
+        .debug-modal {
+            top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
+            width: 85%; padding: 25px; border-radius: 20px; gap: 15px;
+            border: 1px solid var(--accent-red);
+            box-shadow: 0 0 50px rgba(255, 42, 42, 0.2);
+        }
+        .debug-modal.open { transform: translate(-50%, -50%) scale(1); }
+
+        /* History Modal */
         .history-modal {
-            position: absolute;
             bottom: -100%; left: 0; width: 100%; height: 80%;
-            background: #0f0f15;
             border-top-left-radius: 30px; border-top-right-radius: 30px;
-            box-shadow: 0 -10px 50px rgba(0,0,0,0.8);
-            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 200;
-            display: flex; flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-            border-top: 1px solid #333;
+            padding: 20px; box-sizing: border-box;
+            border-bottom: none; border-left: none; border-right: none;
         }
         .history-modal.open { bottom: 0; }
         
-        .hist-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
-        .hist-title { font-size: 1.2rem; color: var(--accent-cyan); font-weight: 700; }
-        .close-btn { background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
-        
-        .hist-list {
-            flex: 1; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        
-        .hist-item {
-            background: #1a1a20;
-            padding: 15px; border-radius: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-left: 3px solid #333;
-        }
-        .hist-item.new { border-left-color: var(--accent-green); animation: slideIn 0.3s; }
-        
-        .h-time { font-size: 1.5rem; color: #fff; font-weight: 700; }
-        .h-meta { font-size: 0.75rem; color: #666; display: flex; flex-direction: column; gap: 2px; }
-        .h-del { background: none; border: none; color: #444; font-size: 1.2rem; cursor: pointer; padding: 5px; }
-        .h-del:hover { color: var(--accent-red); }
+        .m-title { color: #fff; margin: 0; font-size: 1.2rem; text-align: center; }
+        .m-close { margin-top:10px; padding:12px; background:#333; border:none; color:#aaa; border-radius:8px; width: 100%; cursor: pointer; font-weight:bold;}
 
-        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group input {
+            background: #0f0f15; border: 1px solid #333; color: #fff;
+            padding: 15px; font-size: 1.2rem; border-radius: 10px;
+            font-family: inherit; text-align: center;
+        }
 
         /* GPS Status */
         .gps-stat {
@@ -302,41 +311,121 @@
             display: flex; align-items: center; gap: 6px;
             background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 20px;
             border: 1px solid #333; z-index: 50;
+            cursor: pointer; user-select: none;
         }
         .dot { width: 6px; height: 6px; border-radius: 50%; background: #444; }
         .dot.ok { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
         .dot.bad { background: #ffcc00; animation: blink 1s infinite; }
+        .dot.sim { background: var(--accent-purple); box-shadow: 0 0 6px var(--accent-purple); }
         @keyframes blink { 50% { opacity: 0.3; } }
+        
+        /* History List Styling */
+        .hist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .hist-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .hist-item { 
+            background: #1a1a20; padding: 15px; border-radius: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-left: 3px solid #333;
+            transition: all 0.2s;
+        }
+        .hist-item.new { border-left-color: var(--accent-green); }
+        
+        .h-left { display: flex; flex-direction: column; gap: 4px; }
+        .h-title { font-weight: bold; color: #fff; font-size: 1rem; }
+        .h-meta { font-size: 0.75rem; color: #666; display: flex; gap: 10px; }
+        
+        .h-right { display: flex; align-items: center; gap: 10px; }
+        .h-time { font-size: 1.4rem; color: var(--accent-cyan); font-weight: 700; }
+        
+        .h-actions { display: flex; gap: 5px; }
+        .h-btn { 
+            background: #2a2a30; border: none; color: #888; 
+            width: 32px; height: 32px; border-radius: 6px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: all 0.2s;
+        }
+        .h-btn:hover { background: #444; color: #fff; }
+        .h-btn.del:hover { background: rgba(255, 42, 42, 0.2); color: var(--accent-red); }
 
+        /* Slider */
+        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; margin: 20px 0; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; margin-top: -10px; box-shadow: 0 0 10px var(--accent-cyan); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
     </style>
 </head>
 <body>
 
-    <!-- Overlay -->
-    <div id="overlay" class="overlay">
-        <div id="overlayText" class="cnt-num">3</div>
-    </div>
+    <div id="overlay" class="overlay"><div id="overlayText" class="cnt-num">3</div></div>
 
-    <!-- GPS -->
-    <div class="gps-stat">
+    <div class="gps-stat" onclick="triggerDebug()">
         <div id="gpsDot" class="dot"></div>
         <span id="gpsTxt">NO GPS</span>
     </div>
 
+    <!-- Debug Modal -->
+    <div id="debugModal" class="modal-base debug-modal">
+        <h3 class="m-title" style="color:var(--accent-red)">DEV CONSOLE</h3>
+        <div style="text-align:center;">
+            <label style="color:#888; font-size:0.8rem;">MANUELL</label>
+            <input type="range" min="0" max="300" value="0" id="debugSlider" oninput="updateDebugSpeed(this.value)">
+            <div id="debugVal" style="font-size:1.5rem; font-weight:bold;">0 KM/H</div>
+        </div>
+        <button class="m-close" onclick="startAutoSim()" style="background:var(--accent-purple); color:#fff;">SIMULATION STARTEN</button>
+        <button class="m-close" onclick="closeDebug(true)" style="background:#444; color:#fff;">RESET / GPS AN</button>
+        <button class="m-close" onclick="closeDebug(false)">SCHLIESSEN</button>
+    </div>
+
+    <!-- Custom Mode Modal -->
+    <div id="customModal" class="modal-base custom-modal">
+        <h3 class="m-title">BENUTZERDEFINIERT</h3>
+        <div class="input-group">
+            <label>START (KM/H)</label>
+            <input type="number" id="customStart" placeholder="0" value="0">
+        </div>
+        <div class="input-group">
+            <label>ZIEL (KM/H)</label>
+            <input type="number" id="customEnd" placeholder="100" value="100">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="m-close" onclick="closeCustom()" style="margin-top:0;">ABBRECHEN</button>
+            <button class="m-close" onclick="applyCustom()" style="margin-top:0; background:var(--accent-cyan); color:#000;">STARTEN</button>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="renameModal" class="modal-base custom-modal">
+        <h3 class="m-title">UMBENENNEN</h3>
+        <div class="input-group">
+            <input type="text" id="renameInput" placeholder="Name eingeben...">
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="m-close" onclick="closeRename()" style="margin-top:0;">ABBRECHEN</button>
+            <button class="m-close" onclick="confirmRename()" style="margin-top:0; background:var(--accent-cyan); color:#000;">SPEICHERN</button>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div id="confirmModal" class="modal-base custom-modal" style="text-align:center">
+        <h3 class="m-title">LÖSCHEN?</h3>
+        <p style="color:#888; margin-bottom:20px;">Eintrag wirklich löschen?</p>
+        <div style="display:flex; gap:10px;">
+            <button class="m-close" onclick="closeConfirm()">NEIN</button>
+            <button class="m-close" onclick="executeDelete()" style="background:var(--accent-red); color:#fff;">JA, LÖSCHEN</button>
+        </div>
+    </div>
+
     <!-- History Modal -->
-    <div class="history-modal" id="histModal">
+    <div id="histModal" class="modal-base history-modal">
         <div class="hist-header">
-            <span class="hist-title">DATA CENTER</span>
-            <button class="close-btn" onclick="toggleHistory()">×</button>
+            <span class="m-title" style="color:var(--accent-cyan)">DATA CENTER</span>
+            <button onclick="toggleHistory()" style="background:none; border:none; color:#666; font-size:1.5rem; cursor:pointer;">×</button>
         </div>
-        <div class="hist-list" id="histList">
-            <!-- Items kommen hier rein -->
-        </div>
-        <button onclick="clearHistory()" style="margin-top:15px; padding:12px; background:#222; border:none; color:#666; border-radius:8px; font-family:'Orbitron'; cursor:pointer;">ALLE LÖSCHEN</button>
+        <div class="hist-list" id="histList"></div>
+        <button class="m-close" onclick="clearAllLogs()">ALLE LÖSCHEN</button>
     </div>
 
     <div class="container">
-        <!-- TACHO -->
         <div class="gauge-container">
             <canvas id="gaugeCanvas"></canvas>
             <div class="digital-center">
@@ -345,21 +434,18 @@
             </div>
         </div>
 
-        <!-- STEUERUNG -->
         <div class="controls-panel">
             <div class="mode-row">
-                <button class="mode-btn active" onclick="setMode(0, 100, this)">0 - 100</button>
-                <button class="mode-btn" onclick="setMode(10, 100, this)">10 - 100</button>
-                <button class="mode-btn" onclick="setMode(100, 200, this)">100 - 200</button>
+                <button class="mode-btn active" onclick="setMode(0, 100, this)">0-100</button>
+                <button class="mode-btn" onclick="setMode(10, 100, this)">10-100</button>
+                <button class="mode-btn" onclick="setMode(100, 200, this)">100-200</button>
+                <button class="mode-btn" id="btnCustom" onclick="openCustom()">CUSTOM</button>
             </div>
 
             <div class="info-box">
                 <div class="timer-val" id="timer">0.00</div>
                 <div class="status-msg" id="status">Bereit</div>
-                
-                <div class="hold-track" id="holdTrack">
-                    <div class="hold-fill" id="holdFill"></div>
-                </div>
+                <div class="hold-track" id="holdTrack"><div class="hold-fill" id="holdFill"></div></div>
             </div>
 
             <div class="action-area">
@@ -370,32 +456,22 @@
     </div>
 
     <script>
-        /* --- CONFIG --- */
         const MAX_SPEED = 260;
-        const HOLD_TIME = 3000; // 3 sekunden
+        const HOLD_TIME = 3000;
         const TOLERANCE = 2.0; 
-        const STATIC_TOLERANCE = 2.0; // km/h, Schwelle für "Stillstand"
+        const STATIC_TOLERANCE = 2.0;
         const STORAGE_KEY = 'pro_tacho_logs';
 
-        /* --- STATE --- */
         let state = {
-            speed: 0,
-            displaySpeed: 0, // Geglättet
-            
-            modeStart: 0,
-            modeEnd: 100,
-            
-            // Workflow: IDLE -> CHECK_STATIC -> COUNTDOWN -> CHECK_ROLLING -> HOLDING -> ARMED -> RUNNING -> FINISHED
-            phase: 'IDLE',
-            
-            startTime: 0,
-            holdStart: 0,
-            
-            loopId: null,
-            timerId: null
+            speed: 0, displaySpeed: 0,
+            modeStart: 0, modeEnd: 100,
+            phase: 'IDLE', startTime: 0, holdStart: 0, timerId: null,
+            isSimulating: false, simInterval: null
         };
 
-        /* --- UI ELEMENTS --- */
+        let pendingDeleteId = null;
+        let pendingRenameId = null;
+
         const ui = {
             can: document.getElementById('gaugeCanvas'),
             digi: document.getElementById('digiSpeed'),
@@ -409,440 +485,298 @@
             gpsDot: document.getElementById('gpsDot'),
             gpsTxt: document.getElementById('gpsTxt'),
             histModal: document.getElementById('histModal'),
-            histList: document.getElementById('histList')
+            histList: document.getElementById('histList'),
+            customModal: document.getElementById('customModal'),
+            customStart: document.getElementById('customStart'),
+            customEnd: document.getElementById('customEnd'),
+            btnCustom: document.getElementById('btnCustom'),
+            debugModal: document.getElementById('debugModal'),
+            debugVal: document.getElementById('debugVal'),
+            debugSlider: document.getElementById('debugSlider'),
+            renameModal: document.getElementById('renameModal'),
+            renameInput: document.getElementById('renameInput'),
+            confirmModal: document.getElementById('confirmModal')
         };
         const ctx = ui.can.getContext('2d');
         let dim = { w:0, h:0, cx:0, cy:0, r:0 };
 
-        /* --- INIT --- */
         function init() {
-            resize();
-            window.addEventListener('resize', resize);
-            loop(); // Visueller Loop
-            startGPS();
-            renderHistory(); // Lade Logs beim Start
+            resize(); window.addEventListener('resize', resize);
+            loop(); startGPS(); renderHistory();
         }
 
         function resize() {
             const dpr = window.devicePixelRatio || 1;
             const rect = ui.can.parentElement.getBoundingClientRect();
-            
-            if (rect.width === 0 || rect.height === 0) {
-                 dim.w = 0; dim.h = 0; dim.r = 0;
-                 return;
-            }
-
-            ui.can.width = rect.width * dpr;
-            ui.can.height = rect.height * dpr;
+            if (rect.width === 0) return;
+            ui.can.width = rect.width * dpr; ui.can.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
             dim.w = rect.width; dim.h = rect.height;
             dim.cx = dim.w/2; dim.cy = dim.h/2; 
-            
             dim.r = Math.max(0, (dim.w/2) - 15); 
         }
 
-        /* --- HISTORY LOGIC --- */
-        function getHistory() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            return stored ? JSON.parse(stored) : [];
+        /* --- DEBUG --- */
+        let clickCount = 0, clickTimer = null;
+        function triggerDebug() {
+            clickCount++;
+            if(clickTimer) clearTimeout(clickTimer);
+            clickTimer = setTimeout(() => clickCount = 0, 800);
+            if(clickCount >= 5) { ui.debugModal.classList.add('open'); clickCount = 0; }
+        }
+        function closeDebug(reset) {
+            ui.debugModal.classList.remove('open');
+            if(reset) {
+                stopAutoSim();
+                state.isSimulating = false;
+                state.speed = 0;
+                ui.debugSlider.value = 0;
+                ui.debugVal.textContent = "0 KM/H";
+                ui.gpsDot.className = "dot searching";
+                ui.gpsTxt.textContent = "GPS RESTORE";
+            }
+        }
+        function updateDebugSpeed(val) {
+            state.isSimulating = true; stopAutoSim();
+            state.speed = parseFloat(val);
+            ui.debugVal.textContent = state.speed + " KM/H";
+            ui.gpsDot.className = "dot sim"; ui.gpsTxt.textContent = "DEV SIM";
+            checkLogic();
+        }
+        function startAutoSim() {
+            state.isSimulating = true; ui.gpsDot.className = "dot sim"; ui.gpsTxt.textContent = "AUTO SIM";
+            state.speed = 0; ui.debugSlider.value = 0; ui.debugVal.textContent = "0 KM/H";
+            if(state.simInterval) clearInterval(state.simInterval);
+            let simSpeed = 0;
+            state.simInterval = setInterval(() => {
+                if(simSpeed < 300) {
+                    simSpeed += 0.8; state.speed = simSpeed;
+                    ui.debugSlider.value = simSpeed; ui.debugVal.textContent = Math.round(simSpeed) + " KM/H";
+                    checkLogic();
+                } else stopAutoSim();
+            }, 30);
+        }
+        function stopAutoSim() { if(state.simInterval) clearInterval(state.simInterval); }
+
+        /* --- MODALS --- */
+        function openCustom() { ui.customModal.classList.add('open'); }
+        function closeCustom() { ui.customModal.classList.remove('open'); }
+        function toggleHistory() { ui.histModal.classList.toggle('open'); }
+        
+        function applyCustom() {
+            const s = parseInt(ui.customStart.value); const e = parseInt(ui.customEnd.value);
+            if (isNaN(s) || isNaN(e) || s >= e || e > 350) return;
+            state.modeStart = s; state.modeEnd = e;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            ui.btnCustom.classList.add('active'); ui.btnCustom.textContent = `${s}-${e}`;
+            closeCustom(); resetAll(); ui.status.textContent = `MODUS: ${s} - ${e}`;
         }
 
-        function saveRun(timeVal) {
+        /* --- MEASUREMENT LOGIC --- */
+        function setMode(s, e, el) {
+            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') return;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active'); ui.btnCustom.textContent = "CUSTOM";
+            state.modeStart = s; state.modeEnd = e;
+            resetAll(); ui.status.textContent = `MODUS: ${s} - ${e}`;
+        }
+        function handleBtn() {
+            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') { resetAll(); return; }
+            if(state.modeStart === 0) initStaticStart(); else startRollingSequence();
+        }
+        function initStaticStart() { state.phase = 'CHECK_STATIC'; setBtnState('stop'); ui.status.textContent = "BITTE ANHALTEN..."; }
+        function runCountdown() {
+            state.phase = 'COUNTDOWN'; ui.ovl.classList.add('active');
+            let c = 3; updateOverlay(c);
+            let iv = setInterval(() => {
+                c--;
+                if(c > 0) updateOverlay(c);
+                else { clearInterval(iv); updateOverlay("GO"); setTimeout(() => { ui.ovl.classList.remove('active'); arm("GIB GAS!"); }, 800); }
+            }, 1000);
+        }
+        function updateOverlay(txt) {
+            ui.ovlTxt.style.animation = 'none'; ui.ovlTxt.offsetHeight;
+            ui.ovlTxt.style.animation = 'zoomPulse 0.8s ease-out'; ui.ovlTxt.textContent = txt;
+        }
+        function startRollingSequence() {
+            state.phase = 'CHECK_ROLLING'; setBtnState('stop');
+            ui.holdTrack.style.display = 'block'; ui.holdFill.style.width = '0%';
+            ui.status.textContent = `HALTE ${state.modeStart} KM/H`;
+        }
+        function checkLogic() {
+            if(state.phase === 'IDLE' || state.phase === 'FINISHED') return;
+            if(state.phase === 'CHECK_STATIC') {
+                if(state.speed < STATIC_TOLERANCE) runCountdown(); else ui.status.textContent = `ANHALTEN! (${Math.round(state.speed)})`;
+            }
+            if(state.phase === 'CHECK_ROLLING') {
+                if(state.speed >= (state.modeStart-TOLERANCE) && state.speed <= (state.modeStart+TOLERANCE)) {
+                    state.phase = 'HOLDING'; state.holdStart = Date.now();
+                } else ui.status.textContent = state.speed < state.modeStart ? `ZU LANGSAM` : `ZU SCHNELL`;
+            }
+            if(state.phase === 'HOLDING') {
+                if(state.speed < (state.modeStart-TOLERANCE) || state.speed > (state.modeStart+TOLERANCE)) {
+                    state.phase = 'CHECK_ROLLING'; ui.holdFill.style.width = '0%';
+                }
+                const prog = Math.min(((Date.now()-state.holdStart)/HOLD_TIME)*100, 100);
+                ui.holdFill.style.width = prog + '%'; ui.status.textContent = "HALTEN...";
+                if(prog >= 100) { state.phase = 'ARMED'; ui.holdFill.style.background = "#0aff60"; arm("GO! GIB GAS!"); }
+            }
+            if(state.phase === 'ARMED') {
+                const trigger = state.modeStart === 0 ? 1.5 : (state.modeStart+TOLERANCE);
+                if(state.speed > trigger) startRun();
+            }
+            if(state.phase === 'RUNNING') { if(state.speed >= state.modeEnd) finishRun(); }
+        }
+        function arm(msg) {
+            state.phase = 'ARMED'; ui.status.textContent = msg; ui.status.style.color = "#0aff60";
+            if(state.modeStart > 0) setTimeout(() => ui.holdTrack.style.display='none', 1000);
+        }
+        function startRun() {
+            state.phase = 'RUNNING'; state.startTime = Date.now();
+            ui.status.textContent = "MESSUNG LÄUFT"; ui.status.style.color = "var(--accent-cyan)";
+            state.timerId = setInterval(() => { ui.timer.textContent = ((Date.now() - state.startTime)/1000).toFixed(2); }, 30);
+        }
+        function finishRun() {
+            clearInterval(state.timerId); state.phase = 'FINISHED';
+            const timeStr = ((Date.now() - state.startTime)/1000).toFixed(2);
+            ui.timer.textContent = timeStr; ui.status.textContent = `ZIEL ERREICHT!`;
+            setBtnState('start', "NEUER START"); saveRun(timeStr);
+        }
+        function resetAll() {
+            clearInterval(state.timerId); state.phase = 'IDLE'; state.holdStart = 0;
+            ui.timer.textContent = "0.00"; ui.status.textContent = "BEREIT";
+            ui.status.style.color = "var(--text-muted)"; ui.holdTrack.style.display = 'none';
+            ui.holdFill.style.width = '0%'; ui.holdFill.style.background = "var(--accent-cyan)"; setBtnState('start', "START");
+        }
+        function setBtnState(type, txt) {
+            ui.btn.className = type === 'stop' ? "btn-logs btn-stop" : "btn-main btn-start";
+            ui.btn.textContent = type === 'stop' ? "ABBRECHEN" : (txt || "START");
+            if(type === 'stop') { ui.btn.classList.remove('btn-main'); ui.btn.classList.add('btn-logs'); ui.btn.style.flex = "3"; }
+            else { ui.btn.classList.add('btn-main'); ui.btn.classList.remove('btn-logs'); ui.btn.style.flex = "3"; }
+        }
+
+        /* --- HISTORY MANAGER --- */
+        function getHistory() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        function saveRun(t) {
             const logs = getHistory();
-            const newLog = {
-                id: Date.now(),
-                date: new Date().toLocaleString('de-DE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}),
-                mode: `${state.modeStart}-${state.modeEnd}`,
-                time: timeVal
-            };
-            logs.unshift(newLog); 
+            logs.unshift({ id: Date.now(), date: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit', day:'2-digit', month:'2-digit'}), mode: `${state.modeStart}-${state.modeEnd}`, time: t, name: '' });
             if(logs.length > 50) logs.pop();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); renderHistory();
+        }
+        function clearAllLogs() {
+            pendingDeleteId = 'ALL';
+            ui.confirmModal.classList.add('open');
+        }
+        function openDelete(id) {
+            pendingDeleteId = id;
+            ui.confirmModal.classList.add('open');
+        }
+        function closeConfirm() { ui.confirmModal.classList.remove('open'); pendingDeleteId = null; }
+        
+        function executeDelete() {
+            if(pendingDeleteId === 'ALL') localStorage.removeItem(STORAGE_KEY);
+            else {
+                let logs = getHistory();
+                logs = logs.filter(l => l.id !== pendingDeleteId);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            }
             renderHistory();
+            closeConfirm();
         }
 
-        function deleteLog(id) {
+        function openRename(id) {
+            const logs = getHistory();
+            const log = logs.find(l => l.id === id);
+            if(!log) return;
+            pendingRenameId = id;
+            ui.renameInput.value = log.name || "";
+            ui.renameModal.classList.add('open');
+            ui.renameInput.focus();
+        }
+        function closeRename() { ui.renameModal.classList.remove('open'); pendingRenameId = null; }
+        function confirmRename() {
+            if(!pendingRenameId) return;
+            const val = ui.renameInput.value;
             let logs = getHistory();
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-            renderHistory();
-        }
-
-        function clearHistory() {
-            if(confirm("Alle Logs löschen?")) {
-                localStorage.removeItem(STORAGE_KEY);
+            const log = logs.find(l => l.id === pendingRenameId);
+            if(log) {
+                log.name = val;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
                 renderHistory();
             }
+            closeRename();
         }
 
         function renderHistory() {
             const logs = getHistory();
-            ui.histList.innerHTML = '';
-            
-            if(logs.length === 0) {
-                ui.histList.innerHTML = '<div style="text-align:center; color:#444; margin-top:20px;">KEINE DATEN</div>';
-                return;
-            }
-
-            logs.forEach(log => {
-                const el = document.createElement('div');
-                el.className = 'hist-item';
-                if(Date.now() - log.id < 5000) el.classList.add('new');
-                
-                el.innerHTML = `
-                    <div class="h-meta">
-                        <span style="color:#888">${log.date}</span>
-                        <span style="color:var(--accent-cyan); font-weight:bold">${log.mode} KM/H</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <span class="h-time">${log.time}s</span>
-                        <button class="h-del" onclick="deleteLog(${log.id})">×</button>
-                    </div>
-                `;
-                ui.histList.appendChild(el);
+            ui.histList.innerHTML = logs.length ? '' : '<div style="text-align:center; color:#444; margin-top:20px;">KEINE DATEN</div>';
+            logs.forEach(l => {
+                const div = document.createElement('div');
+                div.className = 'hist-item';
+                if(Date.now()-l.id < 5000) div.classList.add('new');
+                const displayName = l.name ? l.name : `${l.mode} KM/H`;
+                const displayMeta = l.name ? `${l.mode} • ${l.date}` : l.date;
+                div.innerHTML = `
+                    <div class="h-left"><span class="h-title">${displayName}</span><div class="h-meta"><span>${displayMeta}</span></div></div>
+                    <div class="h-right"><span class="h-time">${l.time}s</span>
+                    <div class="h-actions"><button class="h-btn" onclick="openRename(${l.id})">✎</button><button class="h-btn del" onclick="openDelete(${l.id})">×</button></div></div>`;
+                ui.histList.appendChild(div);
             });
         }
 
-        function toggleHistory() {
-            ui.histModal.classList.toggle('open');
-        }
-
-        /* --- LOGIK --- */
-        function setMode(s, e, el) {
-            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') return;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            state.modeStart = s; state.modeEnd = e;
-            resetAll();
-            ui.status.textContent = `MODUS: ${s} - ${e}`;
-        }
-
-        function handleBtn() {
-            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') {
-                resetAll();
-                return;
-            }
-            // Start Logic
-            if(state.modeStart === 0) initStaticStart();
-            else startRollingSequence();
-        }
-
-        // 0-100 Logic
-        function initStaticStart() {
-            // Neue Phase: Erst prüfen ob wir stehen
-            state.phase = 'CHECK_STATIC';
-            setBtnState('stop');
-            ui.status.textContent = "BITTE ANHALTEN...";
-            ui.status.style.color = "var(--text-muted)";
-            // CheckLogik übernimmt ab hier
-        }
-
-        function runCountdown() {
-            state.phase = 'COUNTDOWN';
-            ui.ovl.classList.add('active');
-            
-            let c = 3;
-            updateOverlay(c);
-            
-            let iv = setInterval(() => {
-                c--;
-                if(c > 0) updateOverlay(c);
-                else {
-                    clearInterval(iv);
-                    updateOverlay("GO");
-                    document.getElementById('overlayText').style.webkitTextStroke = "2px #0aff60";
-                    document.getElementById('overlayText').style.textShadow = "0 0 30px #0aff60";
-                    setTimeout(() => {
-                        ui.ovl.classList.remove('active');
-                        // Reset style
-                        document.getElementById('overlayText').style.webkitTextStroke = "";
-                        document.getElementById('overlayText').style.textShadow = "";
-                        arm("GIB GAS!");
-                    }, 800);
-                }
-            }, 1000);
-        }
-
-        function updateOverlay(txt) {
-            const el = ui.ovlTxt;
-            el.style.animation = 'none';
-            el.offsetHeight; 
-            el.style.animation = 'zoomPulse 0.8s ease-out';
-            el.textContent = txt;
-        }
-
-        // Rolling Logic
-        function startRollingSequence() {
-            state.phase = 'CHECK_ROLLING';
-            setBtnState('stop');
-            ui.holdTrack.style.display = 'block';
-            ui.holdFill.style.width = '0%';
-            ui.status.textContent = `HALTE ${state.modeStart} KM/H (±${TOLERANCE})`;
-            ui.status.style.color = "var(--accent-cyan)";
-        }
-
-        function checkLogic() {
-            if(state.phase === 'IDLE' || state.phase === 'FINISHED') return;
-
-            // 1. NEU: Check Static (0-100 Modus)
-            if(state.phase === 'CHECK_STATIC') {
-                if(state.speed < STATIC_TOLERANCE) {
-                    // Stehen geblieben -> Countdown starten
-                    runCountdown();
-                } else {
-                    // Bewegt sich noch
-                    ui.status.textContent = `ANHALTEN! (${Math.round(state.speed)})`;
-                    ui.status.style.color = "var(--accent-red)";
-                }
-            }
-
-            // 2. Rolling: Check Speed Window
-            if(state.phase === 'CHECK_ROLLING') {
-                const min = state.modeStart - TOLERANCE;
-                const max = state.modeStart + TOLERANCE;
-                if(state.speed >= min && state.speed <= max) {
-                    state.phase = 'HOLDING';
-                    state.holdStart = Date.now();
-                } else {
-                    if(state.speed < min) ui.status.textContent = `ZU LANGSAM (${Math.round(state.speed)})`;
-                    else ui.status.textContent = `ZU SCHNELL (${Math.round(state.speed)})`;
-                    ui.status.style.color = "#ffcc00";
-                }
-            }
-
-            // 3. Rolling: Hold Timer
-            if(state.phase === 'HOLDING') {
-                const min = state.modeStart - TOLERANCE;
-                const max = state.modeStart + TOLERANCE;
-                
-                if(state.speed < min || state.speed > max) {
-                    state.phase = 'CHECK_ROLLING';
-                    ui.holdFill.style.width = '0%';
-                    ui.status.textContent = "BEREICH VERLASSEN!";
-                    ui.status.style.color = "var(--accent-red)";
-                    return;
-                }
-
-                const elapsed = Date.now() - state.holdStart;
-                const prog = Math.min((elapsed/HOLD_TIME)*100, 100);
-                ui.holdFill.style.width = prog + '%';
-                ui.status.textContent = "HALTEN...";
-                ui.status.style.color = "var(--accent-cyan)";
-
-                if(elapsed >= HOLD_TIME) {
-                    state.phase = 'ARMED';
-                    ui.holdFill.style.background = "var(--accent-green)";
-                    ui.holdFill.style.boxShadow = "0 0 10px var(--accent-green)";
-                    arm("GO! GIB GAS!");
-                }
-            }
-
-            // 4. Armed: Wait for Launch
-            if(state.phase === 'ARMED') {
-                const trigger = state.modeStart === 0 ? 1.5 : (state.modeStart + TOLERANCE);
-                if(state.speed > trigger) {
-                    startRun();
-                }
-            }
-
-            // 5. Running
-            if(state.phase === 'RUNNING') {
-                if(state.speed >= state.modeEnd) finishRun();
-            }
-        }
-
-        function arm(msg) {
-            state.phase = 'ARMED';
-            ui.status.textContent = msg;
-            ui.status.style.color = "var(--accent-green)";
-            if(state.modeStart > 0) setTimeout(() => ui.holdTrack.style.display='none', 1000);
-        }
-
-        function startRun() {
-            state.phase = 'RUNNING';
-            state.startTime = Date.now();
-            ui.status.textContent = "MESSUNG LÄUFT";
-            ui.status.style.color = "var(--accent-cyan)";
-            
-            state.timerId = setInterval(() => {
-                const d = (Date.now() - state.startTime)/1000;
-                ui.timer.textContent = d.toFixed(2);
-            }, 30);
-        }
-
-        function finishRun() {
-            clearInterval(state.timerId);
-            state.phase = 'FINISHED';
-            const d = (Date.now() - state.startTime)/1000;
-            const timeStr = d.toFixed(2);
-            
-            ui.timer.textContent = timeStr;
-            ui.status.textContent = `ZIEL ERREICHT!`;
-            ui.status.style.color = "#fff";
-            setBtnState('start', "NEUER START");
-            
-            saveRun(timeStr);
-        }
-
-        function resetAll() {
-            clearInterval(state.timerId);
-            state.phase = 'IDLE';
-            state.holdStart = 0;
-            ui.timer.textContent = "0.00";
-            ui.status.textContent = "BEREIT";
-            ui.status.style.color = "var(--text-muted)";
-            ui.holdTrack.style.display = 'none';
-            ui.holdFill.style.width = '0%';
-            ui.holdFill.style.background = "var(--accent-cyan)";
-            ui.ovl.classList.remove('active');
-            setBtnState('start', "START");
-        }
-
-        function setBtnState(type, txt) {
-            if(type === 'stop') {
-                ui.btn.className = "btn-main btn-stop";
-                ui.btn.textContent = "ABBRECHEN";
-            } else {
-                ui.btn.className = "btn-main btn-start";
-                ui.btn.textContent = txt || "START";
-            }
-        }
-
-        /* --- VISUALS (CANVAS) --- */
+        /* --- VISUALS --- */
         function loop() {
             let diff = state.speed - state.displaySpeed;
             state.displaySpeed += diff * 0.15; 
-            
             ui.digi.textContent = Math.round(state.displaySpeed);
-            
-            drawTacho();
-            requestAnimationFrame(loop);
+            drawTacho(); requestAnimationFrame(loop);
         }
-
         function drawTacho() {
             if (dim.r <= 20) return;
-
             ctx.clearRect(0,0, dim.w, dim.h);
-            
-            const startAng = 0.75 * Math.PI; 
-            const endAng = 2.25 * Math.PI;  
-            const range = endAng - startAng;
-            
-            ctx.beginPath();
-            ctx.arc(dim.cx, dim.cy, dim.r, startAng, endAng);
-            ctx.lineWidth = 20;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#111';
-            ctx.stroke();
-
-            const steps = MAX_SPEED / 20; 
+            const start = 0.75 * Math.PI; const end = 2.25 * Math.PI; const range = end - start;
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, end);
+            ctx.lineWidth = 20; ctx.lineCap = 'round'; ctx.strokeStyle = '#111'; ctx.stroke();
             for(let i=0; i<=MAX_SPEED; i+=10) {
-                const norm = i / MAX_SPEED;
-                const ang = startAng + (norm * range);
+                const norm = i / MAX_SPEED; const ang = start + (norm * range);
                 const isMajor = (i % 20 === 0);
-                
-                const rOut = dim.r - 15;
-                const rIn = rOut - (isMajor ? 12 : 6);
-                
-                const x1 = dim.cx + Math.cos(ang)*rOut;
-                const y1 = dim.cy + Math.sin(ang)*rOut;
-                const x2 = dim.cx + Math.cos(ang)*rIn;
-                const y2 = dim.cy + Math.sin(ang)*rIn;
-
-                ctx.beginPath();
-                ctx.moveTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.lineWidth = isMajor ? 3 : 1;
-                ctx.strokeStyle = (i >= 220) ? '#ff2a2a' : '#444'; 
-                ctx.stroke();
-                
-                if(isMajor && i%40 === 0) {
-                    const rTxt = dim.r - 45;
-                    const tx = dim.cx + Math.cos(ang)*rTxt;
-                    const ty = dim.cy + Math.sin(ang)*rTxt;
-                    ctx.fillStyle = "#666";
-                    ctx.font = "12px Orbitron";
-                    ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(i, tx, ty);
+                const rOut = dim.r - 15; const rIn = rOut - (isMajor ? 12 : 6);
+                ctx.beginPath(); ctx.moveTo(dim.cx + Math.cos(ang)*rOut, dim.cy + Math.sin(ang)*rOut);
+                ctx.lineTo(dim.cx + Math.cos(ang)*rIn, dim.cy + Math.sin(ang)*rIn);
+                ctx.strokeStyle = i>=220 ? '#ff2a2a' : '#444'; ctx.lineWidth = isMajor ? 3 : 1; ctx.stroke();
+                if(isMajor) {
+                    const rText = dim.r - 40;
+                    ctx.fillStyle = "#888"; ctx.font = "bold 13px Orbitron"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillText(i, dim.cx + Math.cos(ang) * rText, dim.cy + Math.sin(ang) * rText);
                 }
             }
-
-            const speedNorm = Math.min(state.displaySpeed / MAX_SPEED, 1);
-            if(speedNorm > 0.01) {
-                const currentAng = startAng + (speedNorm * range);
-                
+            const norm = Math.min(state.displaySpeed/MAX_SPEED, 1);
+            if(norm > 0.01) {
+                const cur = start + (norm*range);
                 const grad = ctx.createLinearGradient(0, dim.h, dim.w, 0);
-                grad.addColorStop(0, '#00f3ff'); 
-                grad.addColorStop(0.6, '#bc13fe'); 
-                grad.addColorStop(1, '#ff2a2a'); 
-
-                ctx.beginPath();
-                ctx.arc(dim.cx, dim.cy, dim.r, startAng, currentAng);
-                ctx.lineWidth = 14;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = grad;
-                
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#00f3ff';
-                ctx.stroke();
-                ctx.shadowBlur = 0;
+                grad.addColorStop(0, '#00f3ff'); grad.addColorStop(0.6, '#bc13fe'); grad.addColorStop(1, '#ff2a2a');
+                ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, cur);
+                ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.strokeStyle = grad;
+                ctx.shadowBlur = 15; ctx.shadowColor = '#00f3ff'; ctx.stroke(); ctx.shadowBlur = 0;
             }
-
-            drawNeedle(speedNorm, startAng, range);
-        }
-
-        function drawNeedle(norm, start, range) {
             const angle = start + (norm * range);
-            const rNeedle = dim.r - 5;
-            
-            ctx.save();
-            ctx.translate(dim.cx, dim.cy);
-            ctx.rotate(angle);
-            
-            ctx.beginPath();
-            ctx.moveTo(0, -3);
-            ctx.lineTo(rNeedle, 0);
-            ctx.lineTo(0, 3);
-            ctx.fillStyle = "#fff";
-            
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = "#fff";
-            ctx.fill();
-            
-            ctx.restore();
-            ctx.shadowBlur = 0; 
-            
-            ctx.beginPath();
-            ctx.arc(dim.cx, dim.cy, 8, 0, Math.PI*2);
-            ctx.fillStyle = "#222";
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "#555";
-            ctx.fill();
-            ctx.stroke();
+            ctx.save(); ctx.translate(dim.cx, dim.cy); ctx.rotate(angle);
+            ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(dim.r-10, 0); ctx.lineTo(0, 3);
+            ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#fff'; ctx.fill();
+            ctx.restore(); ctx.shadowBlur = 0;
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 6, 0, Math.PI*2); ctx.fillStyle = "#333"; ctx.fill();
         }
 
-        /* --- GPS --- */
         function startGPS() {
             if(!navigator.geolocation) return;
-            ui.gpsDot.className = "dot bad";
-            ui.gpsTxt.textContent = "SUCHE...";
-            
+            ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "SUCHE...";
             navigator.geolocation.watchPosition(pos => {
-                ui.gpsDot.className = "dot ok";
-                ui.gpsTxt.textContent = "GPS OK";
-                let s = pos.coords.speed;
-                if(s == null || s < 0) s = 0;
-                if(s < 0.25) s = 0; // Drift Filter
-                
-                state.speed = s * 3.6;
-                checkLogic();
-            }, err => {
-                ui.gpsDot.className = "dot bad";
-                ui.gpsTxt.textContent = "LOST";
-            }, { enableHighAccuracy:true, maximumAge:0 });
+                if(state.isSimulating) return;
+                ui.gpsDot.className = "dot ok"; ui.gpsTxt.textContent = "GPS OK";
+                let s = pos.coords.speed; if(s==null||s<0) s=0; if(s<0.25) s=0;
+                state.speed = s * 3.6; checkLogic();
+            }, err => { if(!state.isSimulating) { ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "LOST"; } }, {enableHighAccuracy:true, maximumAge:0});
         }
-
         init();
     </script>
 </body>
