@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>GPS Tacho</title>
-    
+
     <meta name="theme-color" content="#050505">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,12 +14,13 @@
 
     <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/192/speedometer.png">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/speedometer.png">
-    <link rel="manifest" href='data:application/manifest+json,{"name":"GPS Tacho","short_name":"Tacho","start_url":".","display":"standalone","background_color":"#050505","theme_color":"#00f3ff","icons":[{"src":"https://img.icons8.com/fluency/192/speedometer.png","sizes":"192x192","type":"image/png"}]}'>
+    <link rel="manifest"
+        href='data:application/manifest+json,{"name":"GPS Tacho","short_name":"Tacho","start_url":".","display":"standalone","background_color":"#050505","theme_color":"#00f3ff","icons":[{"src":"https://img.icons8.com/fluency/192/speedometer.png","sizes":"192x192","type":"image/png"}]}'>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --bg-dark: #050505;
@@ -30,22 +33,26 @@
             --text-muted: #8888aa;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             width: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; 
+            overflow: hidden;
             background-color: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 30%, #1a1a25 0%, #000000 70%);
             font-family: 'Orbitron', sans-serif;
             color: var(--text-main);
-            position: fixed; 
+            position: fixed;
         }
 
         .container {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -57,26 +64,26 @@
         }
 
         .gauge-wrapper-flex {
-            flex: 1 1 auto; 
+            flex: 1 1 auto;
             width: 100%;
             max-width: 500px;
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 0; 
+            min-height: 0;
             margin-bottom: 10px;
         }
 
-        canvas { 
-            max-width: 100%; 
+        canvas {
+            max-width: 100%;
             max-height: 100%;
             object-fit: contain;
         }
 
         .digital-center {
             position: absolute;
-            top: 65%; 
+            top: 65%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -90,8 +97,10 @@
             line-height: 0.9;
             background: linear-gradient(180deg, #fff, #aaa);
             -webkit-background-clip: text;
+            background-clip: text;
+            /* Fix: Define standard property */
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
         }
 
         .unit-label {
@@ -103,26 +112,26 @@
         }
 
         .controls-panel {
-            flex: 0 0 auto; 
+            flex: 0 0 auto;
             width: 100%;
             max-width: 500px;
             background: var(--bg-panel);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
             padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
             z-index: 20;
             box-sizing: border-box;
         }
 
         .mode-row {
             display: flex;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
             padding: 4px;
             gap: 2px;
@@ -143,7 +152,7 @@
         }
 
         .mode-btn.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             color: var(--accent-cyan);
             text-shadow: 0 0 8px var(--accent-cyan);
             font-weight: 700;
@@ -151,7 +160,7 @@
 
         .info-box {
             text-align: center;
-            min-height: 70px; 
+            min-height: 70px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -160,7 +169,7 @@
         .timer-val {
             font-size: 2.8rem;
             color: var(--text-main);
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
             font-variant-numeric: tabular-nums;
             line-height: 1;
         }
@@ -182,6 +191,7 @@
             overflow: hidden;
             display: none;
         }
+
         .hold-fill {
             height: 100%;
             width: 0%;
@@ -213,8 +223,8 @@
 
         .btn-logs {
             flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-muted);
             border-radius: 12px;
             font-family: 'Orbitron', sans-serif;
@@ -228,8 +238,11 @@
             color: #000;
             box-shadow: 0 5px 20px rgba(0, 243, 255, 0.3);
         }
-        
-        .btn-start:active { transform: scale(0.98); opacity: 0.9; }
+
+        .btn-start:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
 
         .btn-stop {
             background: rgba(255, 42, 42, 0.2);
@@ -239,120 +252,332 @@
         }
 
         .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(10px);
             z-index: 100;
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
         }
-        .overlay.active { opacity: 1; pointer-events: auto; }
-        
+
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .cnt-num {
-            font-size: 10rem; font-weight: 900;
+            font-size: 10rem;
+            font-weight: 900;
             color: transparent;
             -webkit-text-stroke: 2px var(--accent-cyan);
             text-shadow: 0 0 30px var(--accent-cyan);
             animation: zoomPulse 0.8s ease-out;
         }
-        @keyframes zoomPulse { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); } }
+
+        @keyframes zoomPulse {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
 
         .modal-base {
-            position: absolute; z-index: 300;
-            background: #15151a; border: 1px solid #333;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            position: absolute;
+            z-index: 300;
+            background: #15151a;
+            border: 1px solid #333;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; pointer-events: none;
-            display: flex; flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
         }
-        .modal-base.open { opacity: 1; pointer-events: auto; }
 
-        #renameModal, #confirmModal {
+        .modal-base.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #renameModal,
+        #confirmModal {
             z-index: 400 !important;
         }
 
         .custom-modal {
-            top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 85%; padding: 25px; border-radius: 20px; gap: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 85%;
+            padding: 25px;
+            border-radius: 20px;
+            gap: 20px;
         }
-        .custom-modal.open { transform: translate(-50%, -50%) scale(1); }
+
+        .custom-modal.open {
+            transform: translate(-50%, -50%) scale(1);
+        }
 
         .debug-modal {
-            top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9);
-            width: 85%; padding: 25px; border-radius: 20px; gap: 15px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 85%;
+            padding: 25px;
+            border-radius: 20px;
+            gap: 15px;
             border: 1px solid var(--accent-red);
             box-shadow: 0 0 50px rgba(255, 42, 42, 0.2);
         }
-        .debug-modal.open { transform: translate(-50%, -50%) scale(1); }
+
+        .debug-modal.open {
+            transform: translate(-50%, -50%) scale(1);
+        }
 
         .history-modal {
-            bottom: -100%; left: 0; width: 100%; height: 80%;
-            border-top-left-radius: 30px; border-top-right-radius: 30px;
-            padding: 20px; box-sizing: border-box;
-            border-bottom: none; border-left: none; border-right: none;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 20px;
+            box-sizing: border-box;
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
         }
-        .history-modal.open { bottom: 0; }
-        
-        .m-title { color: #fff; margin: 0; font-size: 1.2rem; text-align: center; }
-        .m-close { margin-top:10px; padding:12px; background:#333; border:none; color:#aaa; border-radius:8px; width: 100%; cursor: pointer; font-weight:bold;}
 
-        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .history-modal.open {
+            bottom: 0;
+        }
+
+        .m-title {
+            color: #fff;
+            margin: 0;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .m-close {
+            margin-top: 10px;
+            padding: 12px;
+            background: #333;
+            border: none;
+            color: #aaa;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
         .input-group input {
-            background: #0f0f15; border: 1px solid #333; color: #fff;
-            padding: 15px; font-size: 1.2rem; border-radius: 10px;
-            font-family: inherit; text-align: center;
+            background: #0f0f15;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 15px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            font-family: inherit;
+            text-align: center;
         }
 
         .gps-stat {
-            position: absolute; top: 10px; right: 10px;
-            font-size: 0.7rem; color: #555;
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 20px;
-            border: 1px solid #333; z-index: 50;
-            cursor: pointer; user-select: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #333;
+            z-index: 50;
+            cursor: pointer;
+            user-select: none;
         }
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: #444; }
-        .dot.ok { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
-        .dot.bad { background: #ffcc00; animation: blink 1s infinite; }
-        .dot.sim { background: var(--accent-purple); box-shadow: 0 0 6px var(--accent-purple); }
-        @keyframes blink { 50% { opacity: 0.3; } }
-        
-        .hist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
-        .hist-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        
-        .hist-item { 
-            background: #1a1a20; padding: 15px; border-radius: 12px; 
-            display: flex; justify-content: space-between; align-items: center; 
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #444;
+        }
+
+        .dot.ok {
+            background: var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
+        }
+
+        .dot.bad {
+            background: #ffcc00;
+            animation: blink 1s infinite;
+        }
+
+        .dot.sim {
+            background: var(--accent-purple);
+            box-shadow: 0 0 6px var(--accent-purple);
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .hist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .hist-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hist-item {
+            background: #1a1a20;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-left: 3px solid #333;
             transition: all 0.2s;
         }
-        .hist-item.new { border-left-color: var(--accent-green); }
-        
-        .h-left { display: flex; flex-direction: column; gap: 4px; }
-        .h-title { font-weight: bold; color: #fff; font-size: 1rem; }
-        .h-meta { font-size: 0.75rem; color: #666; display: flex; gap: 10px; }
-        
-        .h-right { display: flex; align-items: center; gap: 10px; }
-        .h-time { font-size: 1.4rem; color: var(--accent-cyan); font-weight: 700; }
-        
-        .h-actions { display: flex; gap: 5px; }
-        .h-btn { 
-            background: #2a2a30; border: none; color: #888; 
-            width: 32px; height: 32px; border-radius: 6px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; transition: all 0.2s;
-        }
-        .h-btn:hover { background: #444; color: #fff; }
-        .h-btn.del:hover { background: rgba(255, 42, 42, 0.2); color: var(--accent-red); }
 
-        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; margin: 20px 0; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; margin-top: -10px; box-shadow: 0 0 10px var(--accent-cyan); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #333; border-radius: 2px; }
+        .hist-item.new {
+            border-left-color: var(--accent-green);
+        }
+
+        .h-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .h-title {
+            font-weight: bold;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .h-meta {
+            font-size: 0.75rem;
+            color: #666;
+            display: flex;
+            gap: 10px;
+        }
+
+        .h-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .h-time {
+            font-size: 1.4rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        .h-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .h-btn {
+            background: #2a2a30;
+            border: none;
+            color: #888;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .h-btn:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        .h-btn.del:hover {
+            background: rgba(255, 42, 42, 0.2);
+            color: var(--accent-red);
+        }
+
+        input[type=range] {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            margin: 20px 0;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #333;
+            border-radius: 2px;
+        }
     </style>
 </head>
+
 <body>
 
-    <div id="overlay" class="overlay"><div id="overlayText" class="cnt-num">3</div></div>
+    <div id="overlay" class="overlay">
+        <div id="overlayText" class="cnt-num">3</div>
+    </div>
 
     <div class="gps-stat" onclick="triggerDebug()">
         <div id="gpsDot" class="dot"></div>
@@ -367,7 +592,8 @@
             <input type="range" min="0" max="300" value="0" id="debugSlider" oninput="updateDebugSpeed(this.value)">
             <div id="debugVal" style="font-size:1.5rem; font-weight:bold;">0 KM/H</div>
         </div>
-        <button class="m-close" onclick="startAutoSim()" style="background:var(--accent-purple); color:#fff;">SIMULATION STARTEN</button>
+        <button class="m-close" onclick="startAutoSim()" style="background:var(--accent-purple); color:#fff;">SIMULATION
+            STARTEN</button>
         <button class="m-close" onclick="closeDebug(true)" style="background:#444; color:#fff;">RESET / GPS AN</button>
         <button class="m-close" onclick="closeDebug(false)">SCHLIESSEN</button>
     </div>
@@ -385,7 +611,8 @@
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="m-close" onclick="closeCustom()" style="margin-top:0;">ABBRECHEN</button>
-            <button class="m-close" onclick="applyCustom()" style="margin-top:0; background:var(--accent-cyan); color:#000;">STARTEN</button>
+            <button class="m-close" onclick="applyCustom()"
+                style="margin-top:0; background:var(--accent-cyan); color:#000;">STARTEN</button>
         </div>
     </div>
 
@@ -397,7 +624,8 @@
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="m-close" onclick="closeRename()" style="margin-top:0;">ABBRECHEN</button>
-            <button class="m-close" onclick="confirmRename()" style="margin-top:0; background:var(--accent-cyan); color:#000;">SPEICHERN</button>
+            <button class="m-close" onclick="confirmRename()"
+                style="margin-top:0; background:var(--accent-cyan); color:#000;">SPEICHERN</button>
         </div>
     </div>
 
@@ -407,7 +635,8 @@
         <p style="color:#888; margin-bottom:20px;">Eintrag wirklich löschen?</p>
         <div style="display:flex; gap:10px;">
             <button class="m-close" onclick="closeConfirm()">NEIN</button>
-            <button class="m-close" onclick="executeDelete()" style="background:var(--accent-red); color:#fff;">JA, LÖSCHEN</button>
+            <button class="m-close" onclick="executeDelete()" style="background:var(--accent-red); color:#fff;">JA,
+                LÖSCHEN</button>
         </div>
     </div>
 
@@ -415,7 +644,8 @@
     <div id="histModal" class="modal-base history-modal">
         <div class="hist-header">
             <span class="m-title" style="color:var(--accent-cyan)">DATA CENTER</span>
-            <button onclick="toggleHistory()" style="background:none; border:none; color:#666; font-size:1.5rem; cursor:pointer;">×</button>
+            <button onclick="toggleHistory()"
+                style="background:none; border:none; color:#666; font-size:1.5rem; cursor:pointer;">×</button>
         </div>
         <div class="hist-list" id="histList"></div>
         <button class="m-close" onclick="clearAllLogs()">ALLE LÖSCHEN</button>
@@ -441,7 +671,9 @@
             <div class="info-box">
                 <div class="timer-val" id="timer">0.00</div>
                 <div class="status-msg" id="status">Bereit</div>
-                <div class="hold-track" id="holdTrack"><div class="hold-fill" id="holdFill"></div></div>
+                <div class="hold-track" id="holdTrack">
+                    <div class="hold-fill" id="holdFill"></div>
+                </div>
             </div>
 
             <div class="action-area">
@@ -454,15 +686,17 @@
     <script>
         const MAX_SPEED = 260;
         const HOLD_TIME = 3000;
-        const TOLERANCE = 2.0; 
+        const TOLERANCE = 2.0;
         const STATIC_TOLERANCE = 2.0;
         const STORAGE_KEY = 'pro_tacho_logs';
 
-        let state = {
+        state = {
             speed: 0, displaySpeed: 0,
             modeStart: 0, modeEnd: 100,
             phase: 'IDLE', startTime: 0, holdStart: 0, timerId: null,
-            isSimulating: false, simInterval: null
+            isSimulating: false, simInterval: null,
+            // Smoothing variables
+            lastGpsTime: 0, lastGpsSpeed: 0, gpsAccel: 0
         };
 
         let pendingDeleteId = null;
@@ -495,7 +729,7 @@
             gaugeWrapper: document.querySelector('.gauge-wrapper-flex')
         };
         const ctx = ui.can.getContext('2d');
-        let dim = { w:0, h:0, cx:0, cy:0, r:0 };
+        let dim = { w: 0, h: 0, cx: 0, cy: 0, r: 0 };
 
         function init() {
             resize(); window.addEventListener('resize', resize);
@@ -509,7 +743,7 @@
             ui.can.width = rect.width * dpr; ui.can.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
             dim.w = rect.width; dim.h = rect.height;
-            dim.cx = dim.w/2; dim.cy = dim.h/2; 
+            dim.cx = dim.w / 2; dim.cy = dim.h / 2;
             const minDim = Math.min(dim.w, dim.h);
             dim.r = Math.max(0, (minDim / 2) - 15);
         }
@@ -518,13 +752,13 @@
         let clickCount = 0, clickTimer = null;
         function triggerDebug() {
             clickCount++;
-            if(clickTimer) clearTimeout(clickTimer);
+            if (clickTimer) clearTimeout(clickTimer);
             clickTimer = setTimeout(() => clickCount = 0, 800);
-            if(clickCount >= 5) { ui.debugModal.classList.add('open'); clickCount = 0; }
+            if (clickCount >= 5) { ui.debugModal.classList.add('open'); clickCount = 0; }
         }
         function closeDebug(reset) {
             ui.debugModal.classList.remove('open');
-            if(reset) {
+            if (reset) {
                 stopAutoSim();
                 state.isSimulating = false;
                 state.speed = 0;
@@ -544,23 +778,23 @@
         function startAutoSim() {
             state.isSimulating = true; ui.gpsDot.className = "dot sim"; ui.gpsTxt.textContent = "AUTO SIM";
             state.speed = 0; ui.debugSlider.value = 0; ui.debugVal.textContent = "0 KM/H";
-            if(state.simInterval) clearInterval(state.simInterval);
+            if (state.simInterval) clearInterval(state.simInterval);
             let simSpeed = 0;
             state.simInterval = setInterval(() => {
-                if(simSpeed < 300) {
+                if (simSpeed < 300) {
                     simSpeed += 0.8; state.speed = simSpeed;
                     ui.debugSlider.value = simSpeed; ui.debugVal.textContent = Math.round(simSpeed) + " KM/H";
                     checkLogic();
                 } else stopAutoSim();
             }, 30);
         }
-        function stopAutoSim() { if(state.simInterval) clearInterval(state.simInterval); }
+        function stopAutoSim() { if (state.simInterval) clearInterval(state.simInterval); }
 
         /* --- MODALS --- */
         function openCustom() { ui.customModal.classList.add('open'); }
         function closeCustom() { ui.customModal.classList.remove('open'); }
         function toggleHistory() { ui.histModal.classList.toggle('open'); }
-        
+
         function applyCustom() {
             const s = parseInt(ui.customStart.value); const e = parseInt(ui.customEnd.value);
             if (isNaN(s) || isNaN(e) || s >= e || e > 350) return;
@@ -572,15 +806,15 @@
 
         /* --- MEASUREMENT LOGIC --- */
         function setMode(s, e, el) {
-            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') return;
+            if (state.phase !== 'IDLE' && state.phase !== 'FINISHED') return;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active'); ui.btnCustom.textContent = "CUSTOM";
             state.modeStart = s; state.modeEnd = e;
             resetAll(); ui.status.textContent = `MODUS: ${s} - ${e}`;
         }
         function handleBtn() {
-            if(state.phase !== 'IDLE' && state.phase !== 'FINISHED') { resetAll(); return; }
-            if(state.modeStart === 0) initStaticStart(); else startRollingSequence();
+            if (state.phase !== 'IDLE' && state.phase !== 'FINISHED') { resetAll(); return; }
+            if (state.modeStart === 0) initStaticStart(); else startRollingSequence();
         }
         function initStaticStart() { state.phase = 'CHECK_STATIC'; setBtnState('stop'); ui.status.textContent = "BITTE ANHALTEN..."; }
         function runCountdown() {
@@ -588,7 +822,7 @@
             let c = 3; updateOverlay(c);
             let iv = setInterval(() => {
                 c--;
-                if(c > 0) updateOverlay(c);
+                if (c > 0) updateOverlay(c);
                 else { clearInterval(iv); updateOverlay("GO"); setTimeout(() => { ui.ovl.classList.remove('active'); arm("GIB GAS!"); }, 800); }
             }, 1000);
         }
@@ -602,41 +836,41 @@
             ui.status.textContent = `HALTE ${state.modeStart} KM/H`;
         }
         function checkLogic() {
-            if(state.phase === 'IDLE' || state.phase === 'FINISHED') return;
-            if(state.phase === 'CHECK_STATIC') {
-                if(state.speed < STATIC_TOLERANCE) runCountdown(); else ui.status.textContent = `ANHALTEN! (${Math.round(state.speed)})`;
+            if (state.phase === 'IDLE' || state.phase === 'FINISHED') return;
+            if (state.phase === 'CHECK_STATIC') {
+                if (state.speed < STATIC_TOLERANCE) runCountdown(); else ui.status.textContent = `ANHALTEN! (${Math.round(state.speed)})`;
             }
-            if(state.phase === 'CHECK_ROLLING') {
-                if(state.speed >= (state.modeStart-TOLERANCE) && state.speed <= (state.modeStart+TOLERANCE)) {
+            if (state.phase === 'CHECK_ROLLING') {
+                if (state.speed >= (state.modeStart - TOLERANCE) && state.speed <= (state.modeStart + TOLERANCE)) {
                     state.phase = 'HOLDING'; state.holdStart = Date.now();
                 } else ui.status.textContent = state.speed < state.modeStart ? `ZU LANGSAM` : `ZU SCHNELL`;
             }
-            if(state.phase === 'HOLDING') {
-                if(state.speed < (state.modeStart-TOLERANCE) || state.speed > (state.modeStart+TOLERANCE)) {
+            if (state.phase === 'HOLDING') {
+                if (state.speed < (state.modeStart - TOLERANCE) || state.speed > (state.modeStart + TOLERANCE)) {
                     state.phase = 'CHECK_ROLLING'; ui.holdFill.style.width = '0%';
                 }
-                const prog = Math.min(((Date.now()-state.holdStart)/HOLD_TIME)*100, 100);
+                const prog = Math.min(((Date.now() - state.holdStart) / HOLD_TIME) * 100, 100);
                 ui.holdFill.style.width = prog + '%'; ui.status.textContent = "HALTEN...";
-                if(prog >= 100) { state.phase = 'ARMED'; ui.holdFill.style.background = "#0aff60"; arm("GO! GIB GAS!"); }
+                if (prog >= 100) { state.phase = 'ARMED'; ui.holdFill.style.background = "#0aff60"; arm("GO! GIB GAS!"); }
             }
-            if(state.phase === 'ARMED') {
-                const trigger = state.modeStart === 0 ? 1.5 : (state.modeStart+TOLERANCE);
-                if(state.speed > trigger) startRun();
+            if (state.phase === 'ARMED') {
+                const trigger = state.modeStart === 0 ? 1.5 : (state.modeStart + TOLERANCE);
+                if (state.speed > trigger) startRun();
             }
-            if(state.phase === 'RUNNING') { if(state.speed >= state.modeEnd) finishRun(); }
+            if (state.phase === 'RUNNING') { if (state.speed >= state.modeEnd) finishRun(); }
         }
         function arm(msg) {
             state.phase = 'ARMED'; ui.status.textContent = msg; ui.status.style.color = "#0aff60";
-            if(state.modeStart > 0) setTimeout(() => ui.holdTrack.style.display='none', 1000);
+            if (state.modeStart > 0) setTimeout(() => ui.holdTrack.style.display = 'none', 1000);
         }
         function startRun() {
             state.phase = 'RUNNING'; state.startTime = Date.now();
             ui.status.textContent = "MESSUNG LÄUFT"; ui.status.style.color = "var(--accent-cyan)";
-            state.timerId = setInterval(() => { ui.timer.textContent = ((Date.now() - state.startTime)/1000).toFixed(2); }, 30);
+            state.timerId = setInterval(() => { ui.timer.textContent = ((Date.now() - state.startTime) / 1000).toFixed(2); }, 30);
         }
         function finishRun() {
             clearInterval(state.timerId); state.phase = 'FINISHED';
-            const timeStr = ((Date.now() - state.startTime)/1000).toFixed(2);
+            const timeStr = ((Date.now() - state.startTime) / 1000).toFixed(2);
             ui.timer.textContent = timeStr; ui.status.textContent = `ZIEL ERREICHT!`;
             setBtnState('start', "NEUER START"); saveRun(timeStr);
         }
@@ -649,7 +883,7 @@
         function setBtnState(type, txt) {
             ui.btn.className = type === 'stop' ? "btn-logs btn-stop" : "btn-main btn-start";
             ui.btn.textContent = type === 'stop' ? "ABBRECHEN" : (txt || "START");
-            if(type === 'stop') { ui.btn.classList.remove('btn-main'); ui.btn.classList.add('btn-logs'); ui.btn.style.flex = "3"; }
+            if (type === 'stop') { ui.btn.classList.remove('btn-main'); ui.btn.classList.add('btn-logs'); ui.btn.style.flex = "3"; }
             else { ui.btn.classList.add('btn-main'); ui.btn.classList.remove('btn-logs'); ui.btn.style.flex = "3"; }
         }
 
@@ -657,8 +891,8 @@
         function getHistory() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
         function saveRun(t) {
             const logs = getHistory();
-            logs.unshift({ id: Date.now(), date: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit', day:'2-digit', month:'2-digit'}), mode: `${state.modeStart}-${state.modeEnd}`, time: t, name: '' });
-            if(logs.length > 50) logs.pop();
+            logs.unshift({ id: Date.now(), date: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }), mode: `${state.modeStart}-${state.modeEnd}`, time: t, name: '' });
+            if (logs.length > 50) logs.pop();
             localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); renderHistory();
         }
         function clearAllLogs() {
@@ -670,9 +904,9 @@
             ui.confirmModal.classList.add('open');
         }
         function closeConfirm() { ui.confirmModal.classList.remove('open'); pendingDeleteId = null; }
-        
+
         function executeDelete() {
-            if(pendingDeleteId === 'ALL') localStorage.removeItem(STORAGE_KEY);
+            if (pendingDeleteId === 'ALL') localStorage.removeItem(STORAGE_KEY);
             else {
                 let logs = getHistory();
                 logs = logs.filter(l => l.id !== pendingDeleteId);
@@ -685,7 +919,7 @@
         function openRename(id) {
             const logs = getHistory();
             const log = logs.find(l => l.id === id);
-            if(!log) return;
+            if (!log) return;
             pendingRenameId = id;
             ui.renameInput.value = log.name || "";
             ui.renameModal.classList.add('open');
@@ -693,11 +927,11 @@
         }
         function closeRename() { ui.renameModal.classList.remove('open'); pendingRenameId = null; }
         function confirmRename() {
-            if(!pendingRenameId) return;
+            if (!pendingRenameId) return;
             const val = ui.renameInput.value;
             let logs = getHistory();
             const log = logs.find(l => l.id === pendingRenameId);
-            if(log) {
+            if (log) {
                 log.name = val;
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
                 renderHistory();
@@ -711,7 +945,7 @@
             logs.forEach(l => {
                 const div = document.createElement('div');
                 div.className = 'hist-item';
-                if(Date.now()-l.id < 5000) div.classList.add('new');
+                if (Date.now() - l.id < 5000) div.classList.add('new');
                 const displayName = l.name ? l.name : `${l.mode} KM/H`;
                 const displayMeta = l.name ? `${l.mode} • ${l.date}` : l.date;
                 div.innerHTML = `
@@ -724,33 +958,45 @@
 
         /* --- VISUALS --- */
         function loop() {
+            // Predict current speed based on acceleration if using GPS (not simulating)
+            if (!state.isSimulating && state.lastGpsTime > 0) {
+                const now = Date.now();
+                const dt = (now - state.lastGpsTime) / 1000;
+                // Limit prediction to 1.5 seconds to prevent runaway values if GPS lost
+                if (dt < 1.5) {
+                    let predicted = state.lastGpsSpeed + (state.gpsAccel * dt);
+                    if (predicted < 0) predicted = 0;
+                    state.speed = predicted;
+                }
+            }
+
             let diff = state.speed - state.displaySpeed;
-            state.displaySpeed += diff * 0.15; 
+            state.displaySpeed += diff * 0.15;
             ui.digi.textContent = Math.round(state.displaySpeed);
             drawTacho(); requestAnimationFrame(loop);
         }
         function drawTacho() {
             if (dim.r <= 20) return;
-            ctx.clearRect(0,0, dim.w, dim.h);
+            ctx.clearRect(0, 0, dim.w, dim.h);
             const start = 0.75 * Math.PI; const end = 2.25 * Math.PI; const range = end - start;
             ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, end);
             ctx.lineWidth = 20; ctx.lineCap = 'round'; ctx.strokeStyle = '#111'; ctx.stroke();
-            for(let i=0; i<=MAX_SPEED; i+=10) {
+            for (let i = 0; i <= MAX_SPEED; i += 10) {
                 const norm = i / MAX_SPEED; const ang = start + (norm * range);
                 const isMajor = (i % 20 === 0);
                 const rOut = dim.r - 15; const rIn = rOut - (isMajor ? 12 : 6);
-                ctx.beginPath(); ctx.moveTo(dim.cx + Math.cos(ang)*rOut, dim.cy + Math.sin(ang)*rOut);
-                ctx.lineTo(dim.cx + Math.cos(ang)*rIn, dim.cy + Math.sin(ang)*rIn);
-                ctx.strokeStyle = i>=220 ? '#ff2a2a' : '#444'; ctx.lineWidth = isMajor ? 3 : 1; ctx.stroke();
-                if(isMajor) {
+                ctx.beginPath(); ctx.moveTo(dim.cx + Math.cos(ang) * rOut, dim.cy + Math.sin(ang) * rOut);
+                ctx.lineTo(dim.cx + Math.cos(ang) * rIn, dim.cy + Math.sin(ang) * rIn);
+                ctx.strokeStyle = i >= 220 ? '#ff2a2a' : '#444'; ctx.lineWidth = isMajor ? 3 : 1; ctx.stroke();
+                if (isMajor) {
                     const rText = dim.r - 40;
                     ctx.fillStyle = "#888"; ctx.font = "bold 13px Orbitron"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
                     ctx.fillText(i, dim.cx + Math.cos(ang) * rText, dim.cy + Math.sin(ang) * rText);
                 }
             }
-            const norm = Math.min(state.displaySpeed/MAX_SPEED, 1);
-            if(norm > 0.01) {
-                const cur = start + (norm*range);
+            const norm = Math.min(state.displaySpeed / MAX_SPEED, 1);
+            if (norm > 0.01) {
+                const cur = start + (norm * range);
                 const grad = ctx.createLinearGradient(0, dim.h, dim.w, 0);
                 grad.addColorStop(0, '#00f3ff'); grad.addColorStop(0.6, '#bc13fe'); grad.addColorStop(1, '#ff2a2a');
                 ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, cur);
@@ -759,23 +1005,44 @@
             }
             const angle = start + (norm * range);
             ctx.save(); ctx.translate(dim.cx, dim.cy); ctx.rotate(angle);
-            ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(dim.r-10, 0); ctx.lineTo(0, 3);
+            ctx.beginPath(); ctx.moveTo(0, -3); ctx.lineTo(dim.r - 10, 0); ctx.lineTo(0, 3);
             ctx.fillStyle = '#fff'; ctx.shadowBlur = 10; ctx.shadowColor = '#fff'; ctx.fill();
             ctx.restore(); ctx.shadowBlur = 0;
-            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 6, 0, Math.PI*2); ctx.fillStyle = "#333"; ctx.fill();
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 6, 0, Math.PI * 2); ctx.fillStyle = "#333"; ctx.fill();
         }
 
         function startGPS() {
-            if(!navigator.geolocation) return;
+            if (!navigator.geolocation) return;
             ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "SUCHE...";
             navigator.geolocation.watchPosition(pos => {
-                if(state.isSimulating) return;
+                if (state.isSimulating) return;
                 ui.gpsDot.className = "dot ok"; ui.gpsTxt.textContent = "GPS OK";
-                let s = pos.coords.speed; if(s==null||s<0) s=0; if(s<0.25) s=0;
-                state.speed = s * 3.6; checkLogic();
-            }, err => { if(!state.isSimulating) { ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "LOST"; } }, {enableHighAccuracy:true, maximumAge:0});
+                let s = pos.coords.speed; if (s == null || s < 0) s = 0; if (s < 0.25) s = 0;
+
+                // Calculate acceleration (m/s²)
+                const currentSpeed = s * 3.6; // Convert to km/h for state, but calc accel in m/s or km/h/s?
+                // Use km/h for consistency with state.speed
+                const now = Date.now();
+
+                if (state.lastGpsTime > 0) {
+                    const dt = (now - state.lastGpsTime) / 1000;
+                    if (dt > 0) {
+                        // Acceleration in km/h per second
+                        state.gpsAccel = (currentSpeed - state.lastGpsSpeed) / dt;
+                    }
+                } else {
+                    state.gpsAccel = 0;
+                }
+
+                state.lastGpsSpeed = currentSpeed;
+                state.lastGpsTime = now;
+                // state.speed will be updated by loop() based on prediction
+
+                checkLogic();
+            }, err => { if (!state.isSimulating) { ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "LOST"; } }, { enableHighAccuracy: true, maximumAge: 0 });
         }
         init();
     </script>
 </body>
+
 </html>
