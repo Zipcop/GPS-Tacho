@@ -570,104 +570,140 @@
             background: #333;
             border-radius: 2px;
         }
+
+        .design-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .design-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .design-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .design-card.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+        }
+
+        .d-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .design-btn-trigger {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+        }
     </style>
 </head>
 
 <body>
-
     <div id="overlay" class="overlay">
         <div id="overlayText" class="cnt-num">3</div>
     </div>
-
     <div class="gps-stat" onclick="triggerDebug()">
-        <div id="gpsDot" class="dot"></div>
-        <span id="gpsTxt">NO GPS</span>
+        <div id="gpsDot" class="dot"></div><span id="gpsTxt">NO GPS</span>
     </div>
+    <div class="design-btn-trigger" onclick="openDesignModal()"><span style="font-size:1.2rem;">🎨</span></div>
 
     <!-- Debug Modal -->
     <div id="debugModal" class="modal-base debug-modal">
         <h3 class="m-title" style="color:var(--accent-red)">DEV CONSOLE</h3>
-        <div style="text-align:center;">
-            <label style="color:#888; font-size:0.8rem;">MANUELL</label>
-            <input type="range" min="0" max="300" value="0" id="debugSlider" oninput="updateDebugSpeed(this.value)">
+        <div style="text-align:center;"><label style="color:#888; font-size:0.8rem;">MANUELL</label><input type="range"
+                min="0" max="300" value="0" id="debugSlider" oninput="updateDebugSpeed(this.value)">
             <div id="debugVal" style="font-size:1.5rem; font-weight:bold;">0 KM/H</div>
-        </div>
-        <button class="m-close" onclick="startAutoSim()" style="background:var(--accent-purple); color:#fff;">SIMULATION
-            STARTEN</button>
-        <button class="m-close" onclick="closeDebug(true)" style="background:#444; color:#fff;">RESET / GPS AN</button>
-        <button class="m-close" onclick="closeDebug(false)">SCHLIESSEN</button>
+        </div><button class="m-close" onclick="startAutoSim()"
+            style="background:var(--accent-purple); color:#fff;">SIMULATION STARTEN</button><button class="m-close"
+            onclick="closeDebug(true)" style="background:#444; color:#fff;">RESET / GPS AN</button><button
+            class="m-close" onclick="closeDebug(false)">SCHLIESSEN</button>
     </div>
 
     <!-- Custom Mode Modal -->
     <div id="customModal" class="modal-base custom-modal">
         <h3 class="m-title">BENUTZERDEFINIERT</h3>
-        <div class="input-group">
-            <label>START (KM/H)</label>
-            <input type="number" id="customStart" placeholder="0" value="0">
-        </div>
-        <div class="input-group">
-            <label>ZIEL (KM/H)</label>
-            <input type="number" id="customEnd" placeholder="100" value="100">
-        </div>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="m-close" onclick="closeCustom()" style="margin-top:0;">ABBRECHEN</button>
-            <button class="m-close" onclick="applyCustom()"
-                style="margin-top:0; background:var(--accent-cyan); color:#000;">STARTEN</button>
-        </div>
+        <div class="input-group"><label>START (KM/H)</label><input type="number" id="customStart" placeholder="0"
+                value="0"></div>
+        <div class="input-group"><label>ZIEL (KM/H)</label><input type="number" id="customEnd" placeholder="100"
+                value="100"></div>
+        <div style="display:flex; gap:10px; margin-top:10px;"><button class="m-close" onclick="closeCustom()"
+                style="margin-top:0;">ABBRECHEN</button><button class="m-close" onclick="applyCustom()"
+                style="margin-top:0; background:var(--accent-cyan); color:#000;">STARTEN</button></div>
     </div>
 
     <!-- Rename Modal -->
     <div id="renameModal" class="modal-base custom-modal">
         <h3 class="m-title">UMBENENNEN</h3>
-        <div class="input-group">
-            <input type="text" id="renameInput" placeholder="Name eingeben...">
-        </div>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="m-close" onclick="closeRename()" style="margin-top:0;">ABBRECHEN</button>
-            <button class="m-close" onclick="confirmRename()"
-                style="margin-top:0; background:var(--accent-cyan); color:#000;">SPEICHERN</button>
-        </div>
+        <div class="input-group"><input type="text" id="renameInput" placeholder="Name eingeben..."></div>
+        <div style="display:flex; gap:10px; margin-top:10px;"><button class="m-close" onclick="closeRename()"
+                style="margin-top:0;">ABBRECHEN</button><button class="m-close" onclick="confirmRename()"
+                style="margin-top:0; background:var(--accent-cyan); color:#000;">SPEICHERN</button></div>
     </div>
 
-    <!-- Delete Confirm Modal -->
+    <!-- Confirm Modal -->
     <div id="confirmModal" class="modal-base custom-modal" style="text-align:center">
         <h3 class="m-title">LÖSCHEN?</h3>
         <p style="color:#888; margin-bottom:20px;">Eintrag wirklich löschen?</p>
-        <div style="display:flex; gap:10px;">
-            <button class="m-close" onclick="closeConfirm()">NEIN</button>
-            <button class="m-close" onclick="executeDelete()" style="background:var(--accent-red); color:#fff;">JA,
-                LÖSCHEN</button>
+        <div style="display:flex; gap:10px;"><button class="m-close" onclick="closeConfirm()">NEIN</button><button
+                class="m-close" onclick="executeDelete()" style="background:var(--accent-red); color:#fff;">JA,
+                LÖSCHEN</button></div>
+    </div>
+
+    <!-- Design Selection Modal -->
+    <div id="designModal" class="modal-base custom-modal">
+        <h3 class="m-title">DESIGN WÄHLEN</h3>
+        <div class="design-list" id="designList">
+            <!-- Populated by JS -->
         </div>
+        <button class="m-close" onclick="closeDesignModal()" style="margin-top:20px;">SCHLIESSEN</button>
     </div>
 
     <!-- History Modal -->
     <div id="histModal" class="modal-base history-modal">
-        <div class="hist-header">
-            <span class="m-title" style="color:var(--accent-cyan)">DATA CENTER</span>
-            <button onclick="toggleHistory()"
-                style="background:none; border:none; color:#666; font-size:1.5rem; cursor:pointer;">×</button>
-        </div>
-        <div class="hist-list" id="histList"></div>
-        <button class="m-close" onclick="clearAllLogs()">ALLE LÖSCHEN</button>
+        <div class="hist-header"><span class="m-title" style="color:var(--accent-cyan)">DATA CENTER</span><button
+                onclick="toggleHistory()"
+                style="background:none; border:none; color:#666; font-size:1.5rem; cursor:pointer;">×</button></div>
+        <div class="hist-list" id="histList"></div><button class="m-close" onclick="clearAllLogs()">ALLE
+            LÖSCHEN</button>
     </div>
 
     <div class="container">
-        <div class="gauge-wrapper-flex">
-            <canvas id="gaugeCanvas"></canvas>
+        <div class="gauge-wrapper-flex"><canvas id="gaugeCanvas"></canvas>
             <div class="digital-center">
                 <div class="speed-big" id="digiSpeed">0</div>
                 <div class="unit-label">KM/H</div>
             </div>
         </div>
-
         <div class="controls-panel">
-            <div class="mode-row">
-                <button class="mode-btn active" onclick="setMode(0, 100, this)">0-100</button>
-                <button class="mode-btn" onclick="setMode(10, 100, this)">10-100</button>
-                <button class="mode-btn" onclick="setMode(100, 200, this)">100-200</button>
-                <button class="mode-btn" id="btnCustom" onclick="openCustom()">CUSTOM</button>
-            </div>
-
+            <div class="mode-row"><button class="mode-btn active" onclick="setMode(0, 100, this)">0-100</button><button
+                    class="mode-btn" onclick="setMode(10, 100, this)">10-100</button><button class="mode-btn"
+                    onclick="setMode(100, 200, this)">100-200</button><button class="mode-btn" id="btnCustom"
+                    onclick="openCustom()">CUSTOM</button></div>
             <div class="info-box">
                 <div class="timer-val" id="timer">0.00</div>
                 <div class="status-msg" id="status">Bereit</div>
@@ -675,11 +711,8 @@
                     <div class="hold-fill" id="holdFill"></div>
                 </div>
             </div>
-
-            <div class="action-area">
-                <button class="btn-logs" onclick="toggleHistory()">LOGS</button>
-                <button class="btn-main btn-start" onclick="handleBtn()" id="mainBtn">START</button>
-            </div>
+            <div class="action-area"><button class="btn-logs" onclick="toggleHistory()">LOGS</button><button
+                    class="btn-main btn-start" onclick="handleBtn()" id="mainBtn">START</button></div>
         </div>
     </div>
 
@@ -689,13 +722,23 @@
         const TOLERANCE = 2.0;
         const STATIC_TOLERANCE = 2.0;
         const STORAGE_KEY = 'pro_tacho_logs';
+        const DESIGN_KEY = 'pro_tacho_design';
+
+        /* --- DESIGNS CONFIG --- */
+        const designs = [
+            { id: 'neon', name: 'NEON', icon: '🔮', drawFn: drawNeon },
+            { id: 'analog', name: 'SPORT', icon: '🏎️', drawFn: drawAnalog },
+            { id: 'digital', name: 'DIGITAL', icon: '📟', drawFn: drawDigital },
+            { id: 'moto', name: 'MOTO', icon: '🏍️', drawFn: drawMoto }
+        ];
+
+        let currentDesign = designs[0];
 
         state = {
             speed: 0, displaySpeed: 0,
             modeStart: 0, modeEnd: 100,
             phase: 'IDLE', startTime: 0, holdStart: 0, timerId: null,
             isSimulating: false, simInterval: null,
-            // Smoothing variables
             lastGpsTime: 0, lastGpsSpeed: 0, gpsAccel: 0
         };
 
@@ -726,14 +769,18 @@
             renameModal: document.getElementById('renameModal'),
             renameInput: document.getElementById('renameInput'),
             confirmModal: document.getElementById('confirmModal'),
-            gaugeWrapper: document.querySelector('.gauge-wrapper-flex')
+            gaugeWrapper: document.querySelector('.gauge-wrapper-flex'),
+            designModal: document.getElementById('designModal'),
+            designList: document.getElementById('designList')
         };
         const ctx = ui.can.getContext('2d');
         let dim = { w: 0, h: 0, cx: 0, cy: 0, r: 0 };
 
         function init() {
+            loadDesign();
             resize(); window.addEventListener('resize', resize);
             loop(); startGPS(); renderHistory();
+            renderDesignList();
         }
 
         function resize() {
@@ -746,6 +793,38 @@
             dim.cx = dim.w / 2; dim.cy = dim.h / 2;
             const minDim = Math.min(dim.w, dim.h);
             dim.r = Math.max(0, (minDim / 2) - 15);
+        }
+
+        /* --- DESIGN LOGIC --- */
+        function loadDesign() {
+            const saved = localStorage.getItem(DESIGN_KEY);
+            if (saved) {
+                const found = designs.find(d => d.id === saved);
+                if (found) currentDesign = found;
+            }
+        }
+
+        function openDesignModal() { ui.designModal.classList.add('open'); }
+        function closeDesignModal() { ui.designModal.classList.remove('open'); }
+
+        function selectDesign(id) {
+            const found = designs.find(d => d.id === id);
+            if (found) {
+                currentDesign = found;
+                localStorage.setItem(DESIGN_KEY, id);
+                renderDesignList();
+            }
+        }
+
+        function renderDesignList() {
+            ui.designList.innerHTML = '';
+            designs.forEach(d => {
+                const div = document.createElement('div');
+                div.className = `design-card ${currentDesign.id === d.id ? 'active' : ''}`;
+                div.onclick = () => selectDesign(d.id);
+                div.innerHTML = `<span class="d-icon">${d.icon}</span><span>${d.name}</span>`;
+                ui.designList.appendChild(div);
+            });
         }
 
         /* --- DEBUG --- */
@@ -904,7 +983,6 @@
             ui.confirmModal.classList.add('open');
         }
         function closeConfirm() { ui.confirmModal.classList.remove('open'); pendingDeleteId = null; }
-
         function executeDelete() {
             if (pendingDeleteId === 'ALL') localStorage.removeItem(STORAGE_KEY);
             else {
@@ -915,7 +993,6 @@
             renderHistory();
             closeConfirm();
         }
-
         function openRename(id) {
             const logs = getHistory();
             const log = logs.find(l => l.id === id);
@@ -938,7 +1015,6 @@
             }
             closeRename();
         }
-
         function renderHistory() {
             const logs = getHistory();
             ui.histList.innerHTML = logs.length ? '' : '<div style="text-align:center; color:#444; margin-top:20px;">KEINE DATEN</div>';
@@ -958,11 +1034,10 @@
 
         /* --- VISUALS --- */
         function loop() {
-            // Predict current speed based on acceleration if using GPS (not simulating)
+            // Predict current speed logic
             if (!state.isSimulating && state.lastGpsTime > 0) {
                 const now = Date.now();
                 const dt = (now - state.lastGpsTime) / 1000;
-                // Limit prediction to 1.5 seconds to prevent runaway values if GPS lost
                 if (dt < 1.5) {
                     let predicted = state.lastGpsSpeed + (state.gpsAccel * dt);
                     if (predicted < 0) predicted = 0;
@@ -971,11 +1046,21 @@
             }
 
             let diff = state.speed - state.displaySpeed;
-            state.displaySpeed += diff * 0.15;
+            // Adaptive smoothing: faster response when accelerating, smoother when stable
+            let factor = 0.15;
+            if (Math.abs(diff) > 5) factor = 0.25;
+            state.displaySpeed += diff * factor;
+
             ui.digi.textContent = Math.round(state.displaySpeed);
-            drawTacho(); requestAnimationFrame(loop);
+
+            // Delegate Drawing
+            currentDesign.drawFn(ctx, dim);
+
+            requestAnimationFrame(loop);
         }
-        function drawTacho() {
+
+        /* 1. NEON DESIGN (Original) */
+        function drawNeon(ctx, dim) {
             if (dim.r <= 20) return;
             ctx.clearRect(0, 0, dim.w, dim.h);
             const start = 0.75 * Math.PI; const end = 2.25 * Math.PI; const range = end - start;
@@ -1011,6 +1096,143 @@
             ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 6, 0, Math.PI * 2); ctx.fillStyle = "#333"; ctx.fill();
         }
 
+        /* 2. ANALOG DESIGN (Sport/Needle) */
+        function drawAnalog(ctx, dim) {
+            ctx.clearRect(0, 0, dim.w, dim.h);
+            const start = 0.75 * Math.PI; const end = 2.25 * Math.PI; const range = end - start;
+
+            // Outer Ring
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, end);
+            ctx.lineWidth = 10; ctx.strokeStyle = '#222'; ctx.stroke();
+
+            for (let i = 0; i <= MAX_SPEED; i += 10) {
+                const norm = i / MAX_SPEED; const ang = start + (norm * range);
+                const isMajor = (i % 20 === 0);
+                const rOut = dim.r - 5; const rIn = rOut - (isMajor ? 15 : 8);
+
+                ctx.beginPath(); ctx.moveTo(dim.cx + Math.cos(ang) * rOut, dim.cy + Math.sin(ang) * rOut);
+                ctx.lineTo(dim.cx + Math.cos(ang) * rIn, dim.cy + Math.sin(ang) * rIn);
+                // Red Zone
+                ctx.strokeStyle = i >= 200 ? '#e00' : '#fff';
+                ctx.lineWidth = isMajor ? 3 : 1; ctx.stroke();
+
+                if (isMajor) {
+                    const rText = dim.r - 35;
+                    ctx.fillStyle = i >= 200 ? "#e00" : "#fff";
+                    ctx.font = "bold 16px sans-serif";
+                    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                    ctx.fillText(i, dim.cx + Math.cos(ang) * rText, dim.cy + Math.sin(ang) * rText);
+                }
+            }
+
+            // Needle
+            const norm = Math.min(state.displaySpeed / MAX_SPEED, 1.05);
+            const angle = start + (norm * range);
+            ctx.save(); ctx.translate(dim.cx, dim.cy); ctx.rotate(angle);
+
+            // Long Red Needle
+            ctx.beginPath();
+            ctx.moveTo(0, -2);
+            ctx.lineTo(dim.r - 10, 0);
+            ctx.lineTo(0, 2);
+            ctx.fillStyle = '#e00';
+            ctx.fill();
+
+            // Counterweight
+            ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(-20, 0); ctx.lineTo(0, 4);
+            ctx.fillStyle = '#a00'; ctx.fill();
+
+            ctx.restore();
+
+            // Center Cap
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#111"; ctx.fill();
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, 3, 0, Math.PI * 2);
+            ctx.fillStyle = "#555"; ctx.fill();
+        }
+
+        /* 3. DIGITAL DESIGN (Minimal) */
+        function drawDigital(ctx, dim) {
+            ctx.clearRect(0, 0, dim.w, dim.h);
+            const start = 0.75 * Math.PI; const end = 2.25 * Math.PI; const range = end - start;
+
+            // Subtle Track
+            ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, end);
+            ctx.lineWidth = 4; ctx.strokeStyle = '#222'; ctx.stroke();
+
+            // Active Arc
+            const norm = Math.min(state.displaySpeed / MAX_SPEED, 1);
+            if (norm > 0) {
+                const cur = start + (norm * range);
+                ctx.beginPath(); ctx.arc(dim.cx, dim.cy, dim.r, start, cur);
+                ctx.lineWidth = 4; ctx.strokeStyle = '#0aff60'; ctx.stroke();
+            }
+
+            // We rely on the DOM digital display mostly, but let's add some deco
+            ctx.fillStyle = "#333";
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("PURE DIGITAL", dim.cx, dim.cy + 60);
+        }
+
+        /* 4. MOTO DESIGN (Honda MSX Style Bar) */
+        function drawMoto(ctx, dim) {
+            ctx.clearRect(0, 0, dim.w, dim.h);
+
+            // Draw RPM/Speed Bar at top half
+            // An arc from 180 (left) to 360 (right) -> PI to 2PI
+            // But let's shape it like the image: a thick bar arching over
+            const start = Math.PI;
+            const end = 2 * Math.PI;
+            const radius = dim.r - 20;
+
+            // Background Bar (Segments)
+            const segments = 30;
+            const segAngle = (end - start) / segments;
+            const pad = 0.02; // gap between segments
+
+            for (let i = 0; i < segments; i++) {
+                const s = start + (i * segAngle) + pad;
+                const e = start + ((i + 1) * segAngle) - pad;
+
+                // Active calculation
+                const threshold = (i / segments) * MAX_SPEED;
+                const isActive = state.displaySpeed >= threshold;
+
+                ctx.beginPath();
+                ctx.arc(dim.cx, dim.cy + 30, radius, s, e);
+                ctx.lineWidth = 25;
+
+                // Color logic: Green -> Yellow -> Red
+                let col = '#333';
+                if (isActive) {
+                    if (i < segments * 0.6) col = '#fff';      // Low (White/Green)
+                    else if (i < segments * 0.85) col = '#ddd'; // Mid (White)
+                    else col = '#e00';                        // High (Red)
+                }
+
+                ctx.strokeStyle = col;
+                ctx.stroke();
+            }
+
+            // Decor: "GEAR" Indicator (Fake)
+            ctx.fillStyle = "#222";
+            ctx.beginPath();
+            ctx.roundRect(dim.cx - 20, dim.cy - 60, 40, 40, 5);
+            ctx.fill();
+
+            ctx.fillStyle = "#0aff60";
+            ctx.font = "bold 24px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("N", dim.cx, dim.cy - 40);
+
+            // Labels
+            ctx.fillStyle = "#888";
+            ctx.font = "10px sans-serif";
+            ctx.fillText("x10 km/h", dim.cx + radius, dim.cy + 30);
+        }
+
         function startGPS() {
             if (!navigator.geolocation) return;
             ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "SUCHE...";
@@ -1019,28 +1241,20 @@
                 ui.gpsDot.className = "dot ok"; ui.gpsTxt.textContent = "GPS OK";
                 let s = pos.coords.speed; if (s == null || s < 0) s = 0; if (s < 0.25) s = 0;
 
-                // Calculate acceleration (m/s²)
-                const currentSpeed = s * 3.6; // Convert to km/h for state, but calc accel in m/s or km/h/s?
-                // Use km/h for consistency with state.speed
+                const currentSpeed = s * 3.6;
                 const now = Date.now();
 
                 if (state.lastGpsTime > 0) {
                     const dt = (now - state.lastGpsTime) / 1000;
-                    if (dt > 0) {
-                        // Acceleration in km/h per second
-                        state.gpsAccel = (currentSpeed - state.lastGpsSpeed) / dt;
-                    }
-                } else {
-                    state.gpsAccel = 0;
-                }
+                    if (dt > 0) state.gpsAccel = (currentSpeed - state.lastGpsSpeed) / dt;
+                } else state.gpsAccel = 0;
 
                 state.lastGpsSpeed = currentSpeed;
                 state.lastGpsTime = now;
-                // state.speed will be updated by loop() based on prediction
-
                 checkLogic();
             }, err => { if (!state.isSimulating) { ui.gpsDot.className = "dot bad"; ui.gpsTxt.textContent = "LOST"; } }, { enableHighAccuracy: true, maximumAge: 0 });
         }
+
         init();
     </script>
 </body>
